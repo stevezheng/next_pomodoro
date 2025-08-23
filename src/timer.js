@@ -56,11 +56,31 @@ class PomodoroTimer {
     if (this.state !== 'running') return
     this.state = 'paused'
     clearInterval(this.interval)
+    
+    if (this.onTick) {
+      this.onTick(this.timeLeft, this.phase, this.state)
+    }
   }
 
   resume() {
     if (this.state !== 'paused') return
-    this.start()
+    
+    this.state = 'running'
+    this.interval = setInterval(() => {
+      this.timeLeft--
+      
+      if (this.onTick) {
+        this.onTick(this.timeLeft, this.phase, this.state)
+      }
+      
+      if (this.timeLeft <= 0) {
+        this.complete()
+      }
+    }, 1000)
+    
+    if (this.onTick) {
+      this.onTick(this.timeLeft, this.phase, this.state)
+    }
   }
 
   toggle() {

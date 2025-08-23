@@ -40,24 +40,25 @@ const createTray = () => {
 
 const buildContextMenu = () => {
   const status = timer.getStatus()
+  const phaseText = status.phase === 'work' ? '工作' : status.phase === 'longbreak' ? '长休息' : '短休息'
   
   return Menu.buildFromTemplate([
     { 
-      label: `${status.timeLeftFormatted} - ${status.phase}`, 
+      label: `${status.timeLeftFormatted} - ${phaseText}`, 
       enabled: false 
     },
     { type: 'separator' },
     { 
-      label: status.state === 'running' ? 'Pause' : status.state === 'paused' ? 'Resume' : 'Start', 
+      label: status.state === 'running' ? '暂停' : status.state === 'paused' ? '继续' : '开始', 
       click: () => timer.toggle()
     },
     { 
-      label: 'Stop', 
+      label: '停止', 
       click: () => timer.stop(),
       enabled: status.state !== 'stopped'
     },
     { type: 'separator' },
-    { label: 'Quit', click: () => app.quit() }
+    { label: '退出', click: () => app.quit() }
   ])
 }
 
@@ -66,8 +67,10 @@ const updateTrayTitle = (timeLeft, phase, state) => {
   const statusIcon = state === 'running' ? '' : state === 'paused' ? '⏸' : '⏹'
   const phaseIcon = phase === 'work' ? '🍅' : phase === 'longbreak' ? '🛌' : '☕'
   
+  const phaseText = phase === 'work' ? '工作' : phase === 'longbreak' ? '长休息' : '短休息'
+  
   tray.setTitle(`${statusIcon}${phaseIcon}${formattedTime}`)
-  tray.setToolTip(`Pomodoro Timer - ${phase} - ${formattedTime}`)
+  tray.setToolTip(`番茄钟 - ${phaseText} - ${formattedTime}`)
   tray.setContextMenu(buildContextMenu())
 }
 
