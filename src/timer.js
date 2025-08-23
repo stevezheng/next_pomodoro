@@ -1,22 +1,40 @@
 class PomodoroTimer {
-  constructor() {
-    this.state = 'stopped' // stopped, running, paused
-    this.phase = 'work' // work, break, longbreak
-    this.timeLeft = 25 * 60 // 25分钟 = 1500秒
+  constructor(settings) {
+    this.settings = settings
+    this.state = 'stopped'
+    this.phase = 'work'
     this.completedPomodoros = 0
     this.interval = null
-    
-    this.WORK_TIME = 25 * 60
-    this.BREAK_TIME = 5 * 60
-    this.LONG_BREAK_TIME = 15 * 60
-    
+    this.timeLeft = this.getWorkTime()
     this.onTick = null
     this.onComplete = null
+    
+    this.actions = {
+      stopped: () => this.start(),
+      running: () => this.pause(), 
+      paused: () => this.resume()
+    }
+  }
+  
+  getWorkTime() {
+    return this.settings ? this.settings.get('workTime') * 60 : 25 * 60
+  }
+  
+  getBreakTime() {
+    return this.settings ? this.settings.get('breakTime') * 60 : 5 * 60
+  }
+  
+  getLongBreakTime() {
+    return this.settings ? this.settings.get('longBreakTime') * 60 : 15 * 60
+  }
+  
+  getLongBreakInterval() {
+    return this.settings ? this.settings.get('longBreakInterval') : 4
   }
   
   start() {
     if (this.state === 'stopped') {
-      this.timeLeft = this.WORK_TIME
+      this.timeLeft = this.getWorkTime()
       this.phase = 'work'
     }
     
@@ -35,17 +53,23 @@ class PomodoroTimer {
   }
   
   pause() {
-    if (this.state === 'running') {
-      this.state = 'paused'
-      clearInterval(this.interval)
-    } else if (this.state === 'paused') {
-      this.start()
-    }
+    if (this.state !== 'running') return
+    this.state = 'paused'
+    clearInterval(this.interval)
+  }
+
+  resume() {
+    if (this.state !== 'paused') return
+    this.start()
+  }
+
+  toggle() {
+    this.actions[this.state]()
   }
   
   stop() {
     this.state = 'stopped'
-    this.timeLeft = this.WORK_TIME
+    this.timeLeft = this.getWorkTime()
     this.phase = 'work'
     clearInterval(this.interval)
     
@@ -59,16 +83,16 @@ class PomodoroTimer {
     
     if (this.phase === 'work') {
       this.completedPomodoros++
-      if (this.completedPomodoros % 4 === 0) {
+      if (this.completedPomodoros % this.getLongBreakInterval() === 0) {
         this.phase = 'longbreak'
-        this.timeLeft = this.LONG_BREAK_TIME
+        this.timeLeft = this.getLongBreakTime()
       } else {
         this.phase = 'break'
-        this.timeLeft = this.BREAK_TIME
+        this.timeLeft = this.getBreakTime()
       }
     } else {
       this.phase = 'work'
-      this.timeLeft = this.WORK_TIME
+      this.timeLeft = this.getWorkTime()
     }
     
     this.state = 'stopped'
