@@ -17,13 +17,13 @@ const createTray = () => {
     updateTrayTitle(timeLeft, phase, state)
   }
   
-  timer.onComplete = (nextPhase, completedPomodoros) => {
-    showNotification(nextPhase, completedPomodoros)
+  timer.onComplete = (completedPhase, nextPhase, completedPomodoros) => {
+    showNotification(completedPhase, nextPhase, completedPomodoros)
     
-    if (timer.phase === 'work') {
+    if (completedPhase === 'work') {
       statistics.recordSession('work', settings.get('workTime') * 60, true)
     } else {
-      const duration = timer.phase === 'longbreak' ? settings.get('longBreakTime') * 60 : settings.get('breakTime') * 60
+      const duration = completedPhase === 'longbreak' ? settings.get('longBreakTime') * 60 : settings.get('breakTime') * 60
       statistics.recordSession('break', duration, true)
     }
   }
@@ -74,24 +74,29 @@ const updateTrayTitle = (timeLeft, phase, state) => {
   tray.setContextMenu(buildContextMenu())
 }
 
-const showNotification = (nextPhase, completedPomodoros) => {
+const showNotification = (completedPhase, nextPhase, completedPomodoros) => {
   let title, body
   
-  if (nextPhase === 'work') {
-    title = '休息结束！'
-    body = `已完成 ${completedPomodoros} 个番茄钟。开始新的工作周期吧！`
-  } else if (nextPhase === 'break') {
-    title = '番茄钟完成！'
-    body = '工作25分钟结束，休息5分钟吧！'
-  } else {
-    title = '番茄钟完成！'
-    body = '工作25分钟结束，享受15分钟长休息！'
+  if (completedPhase === 'work') {
+    title = '🍅 工作时间结束！'
+    if (nextPhase === 'longbreak') {
+      body = `恭喜完成第 ${completedPomodoros} 个番茄钟！\n开始15分钟长休息吧！`
+    } else {
+      body = `恭喜完成第 ${completedPomodoros} 个番茄钟！\n开始5分钟短休息吧！`
+    }
+  } else if (completedPhase === 'break') {
+    title = '☕ 短休息结束！'
+    body = '休息时间结束了，开始新的25分钟工作周期吧！'
+  } else if (completedPhase === 'longbreak') {
+    title = '🛌 长休息结束！'
+    body = '长休息时间结束了，准备开始新的工作周期！'
   }
   
   new Notification({
     title,
     body,
-    sound: true
+    sound: true,
+    urgency: 'critical'
   }).show()
 }
 

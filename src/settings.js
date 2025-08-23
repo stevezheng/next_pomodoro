@@ -1,16 +1,17 @@
 const { app } = require('electron')
 const path = require('path')
 const fs = require('fs')
+require('dotenv').config()
 
 class Settings {
   constructor() {
     this.userDataPath = app.getPath('userData')
     this.settingsPath = path.join(this.userDataPath, 'settings.json')
     this.defaults = {
-      workTime: 25,
-      breakTime: 5,
-      longBreakTime: 15,
-      longBreakInterval: 4,
+      workTime: process.env.DEV_WORK_TIME ? parseInt(process.env.DEV_WORK_TIME) / 60 : 25,
+      breakTime: process.env.DEV_BREAK_TIME ? parseInt(process.env.DEV_BREAK_TIME) / 60 : 5,
+      longBreakTime: process.env.DEV_LONG_BREAK_TIME ? parseInt(process.env.DEV_LONG_BREAK_TIME) / 60 : 15,
+      longBreakInterval: process.env.LONG_BREAK_INTERVAL ? parseInt(process.env.LONG_BREAK_INTERVAL) : 4,
       autoStartBreaks: false,
       autoStartPomodoros: false,
       notifications: true,

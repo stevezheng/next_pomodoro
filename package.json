@@ -22,5 +22,8 @@
       "category": "public.app-category.productivity",
       "target": "dmg"
     }
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1"
   }
 }

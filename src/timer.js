@@ -101,6 +101,8 @@ class PomodoroTimer {
   complete() {
     clearInterval(this.interval)
     
+    const completedPhase = this.phase
+    
     if (this.phase === 'work') {
       this.completedPomodoros++
       if (this.completedPomodoros % this.getLongBreakInterval() === 0) {
@@ -118,7 +120,7 @@ class PomodoroTimer {
     this.state = 'stopped'
     
     if (this.onComplete) {
-      this.onComplete(this.phase, this.completedPomodoros)
+      this.onComplete(completedPhase, this.phase, this.completedPomodoros)
     }
     
     if (this.onTick) {
