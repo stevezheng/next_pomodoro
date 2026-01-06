@@ -3,16 +3,16 @@
  */
 import { TimerState } from './types'
 
-/** 番茄时长（秒） */
-export const POMODORO_TIME = 25 * 60
+/** 番茄时长（秒）- 测试模式：25秒 */
+export const POMODORO_TIME = 25
 
-/** 基础休息时间（秒） */
-export const BASE_BREAK_TIME = 5 * 60
+/** 基础休息时间（秒）- 测试模式：5秒 */
+export const BASE_BREAK_TIME = 5
 
 /** 最大推迟次数 */
 export const MAX_SNOOZE_COUNT = 3
 
-/** 推迟选项（分钟） */
+/** 推迟选项（秒）- 测试模式 */
 export const SNOOZE_OPTIONS = [5, 10, 15]
 
 /** 状态图标 */

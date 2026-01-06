@@ -24,12 +24,13 @@ export function minutesToSeconds(minutes: number): number {
 
 /**
  * 计算休息时间
- * 公式：5分钟 + floor(累计推迟分钟 ÷ 5)
- * @param totalSnoozeMinutes 累计推迟分钟数
+ * 公式：基础时间 + floor(累计推迟秒 ÷ 5)
+ * 测试模式：5秒 + floor(累计推迟秒 ÷ 5)
+ * @param totalSnoozeSeconds 累计推迟秒数
  * @returns 休息时间（秒）
  */
-export function calculateBreakTime(totalSnoozeMinutes: number): number {
-  const baseMinutes = 5
-  const penaltyMinutes = Math.floor(totalSnoozeMinutes / 5)
-  return (baseMinutes + penaltyMinutes) * 60
+export function calculateBreakTime(totalSnoozeSeconds: number): number {
+  const BASE_TIME = 5  // 测试模式：5秒基础休息
+  const penalty = Math.floor(totalSnoozeSeconds / 5)
+  return BASE_TIME + penalty
 }

@@ -38,10 +38,10 @@ export class AlertManager {
       detail = '这是最后一次推迟机会\n之后系统将强制进入休息'
     }
 
-    // 构建按钮
+    // 构建按钮（测试模式：秒）
     const buttons = isLastChance
-      ? ['开始休息 ⭐', '推迟 5 分钟', '推迟 10 分钟', '推迟 15 分钟（最后一次）']
-      : ['开始休息 ⭐', '推迟 5 分钟', '推迟 10 分钟', '推迟 15 分钟']
+      ? ['开始休息 ⭐', '推迟 5 秒', '推迟 10 秒', '推迟 15 秒（最后一次）']
+      : ['开始休息 ⭐', '推迟 5 秒', '推迟 10 秒', '推迟 15 秒']
 
     const response = await dialog.showMessageBox(this.mainWindow || undefined, {
       type: isLastChance ? 'warning' : snoozeCount > 0 ? 'warning' : 'info',

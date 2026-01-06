@@ -1,6 +1,6 @@
 import { State } from './state'
 import { Event, StateContext, TransitionResult, TimerState, EventType, NotificationType } from '@shared/types'
-import { calculateBreakTime, minutesToSeconds } from '@shared/utils/time'
+import { calculateBreakTime } from '@shared/utils/time'
 import { MAX_SNOOZE_COUNT } from '@shared/constants'
 
 /**
@@ -33,11 +33,11 @@ export class SnoozeState extends State {
     }
 
     if (event.type === EventType.SNOOZE) {
-      // 用户选择推迟
-      const minutes = event.payload as number
+      // 用户选择推迟（payload 现在是秒数）
+      const seconds = event.payload as number
       return {
         nextState: TimerState.SNOOZE,
-        timeLeft: minutesToSeconds(minutes),
+        timeLeft: seconds,
         shouldNotify: false
       }
     }

@@ -22,8 +22,8 @@ export class TitleFormatter {
         return `${STATE_ICONS[TimerState.FOCUS]} ${formatTime(context.timeLeft)}`
 
       case TimerState.SNOOZE:
-        // 显示累计推迟时间
-        return `${STATE_ICONS[TimerState.SNOOZE]} +${context.snoozeMinutes}m`
+        // 显示累计推迟时间（测试模式：秒）
+        return `${STATE_ICONS[TimerState.SNOOZE]} +${context.snoozeMinutes}s`
 
       case TimerState.BREAK:
         return `${STATE_ICONS[TimerState.BREAK]} ${formatTime(context.timeLeft)}`

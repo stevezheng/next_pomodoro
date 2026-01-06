@@ -21,7 +21,7 @@ export interface StateContext {
   completedPomodoros: number
   /** 当前轮次的推迟次数 */
   snoozeCount: number
-  /** 当前轮次的累计推迟分钟数 */
+  /** 当前轮次的累计推迟秒数（测试模式） */
   snoozeMinutes: number
 }
 
