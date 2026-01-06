@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:next_pomodoro}",
+      "name": "Debug PomodoroTimer",
+      "target": "PomodoroTimer",
+      "configuration": "debug",
+      "preLaunchTask": "swift: Build Debug PomodoroTimer"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:next_pomodoro}",
+      "name": "Release PomodoroTimer",
+      "target": "PomodoroTimer",
+      "configuration": "release",
+      "preLaunchTask": "swift: Build Release PomodoroTimer"
+    }
+  ]
+}

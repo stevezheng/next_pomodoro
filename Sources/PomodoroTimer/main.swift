@@ -8,8 +8,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // 初始化番茄钟应用
         pomodoroApp = PomodoroApp()
 
-        // 设置应用为前台应用（虽然只显示 Menu Bar）
-        NSApp.setActivationPolicy(.accessory)
+        // 使用 regular 策略以确保弹窗能正常获得焦点
+        // 但不显示在 Dock 中（通过 LSUIElement = true 在 Info.plist 中设置）
+        NSApp.setActivationPolicy(.regular)
 
         print("番茄钟已启动")
     }
@@ -20,6 +21,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         return true
+    }
+
+    // 当应用被激活时，确保能显示弹窗
+    func applicationDidBecomeActive(_ notification: Notification) {
+        NSApp.setActivationPolicy(.regular)
     }
 }
 

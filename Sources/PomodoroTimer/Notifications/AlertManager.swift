@@ -6,6 +6,8 @@ class AlertManager {
     // MARK: - 专注完成提醒
 
     static func showFocusComplete(snoozeCount: Int, response: @escaping (SnoozeResponse) -> Void) {
+        Log.debug("显示专注完成弹窗，推迟次数: \(snoozeCount)")
+
         DispatchQueue.main.async {
             let alert = NSAlert()
 
@@ -28,7 +30,11 @@ class AlertManager {
             alert.window.level = NSWindow.Level.floating
             NSApp.activate(ignoringOtherApps: true)
 
+            Log.debug("弹窗即将显示，窗口级别: \(alert.window.level.rawValue)")
+
             let responseCode = alert.runModal()
+
+            Log.debug("用户响应: \(responseCode.rawValue)")
 
             let result: SnoozeResponse
             // NSAlert 返回值从 1000 开始，对应按钮索引
@@ -42,9 +48,11 @@ class AlertManager {
             case 1003:  // 第四个按钮
                 result = .snooze(15)
             default:
+                Log.error("未知的响应代码: \(responseCode.rawValue)")
                 result = .startBreak
             }
 
+            Log.debug("最终结果: \(result)")
             response(result)
         }
     }
@@ -65,6 +73,8 @@ class AlertManager {
             alert.alertStyle = .informational
             alert.icon = Constants.icons.breakTime.toImage()
             alert.addButton(withTitle: "好的")
+            alert.window.level = NSWindow.Level.floating
+            NSApp.activate(ignoringOtherApps: true)
             alert.runModal()
         }
     }
@@ -79,15 +89,13 @@ class AlertManager {
             alert.alertStyle = .informational
             alert.icon = Constants.icons.idle.toImage()
             alert.addButton(withTitle: "好的")
+            alert.window.level = NSWindow.Level.floating
+            NSApp.activate(ignoringOtherApps: true)
             alert.runModal()
         }
     }
 
     // MARK: - 辅助方法
-
-    private static func createAlert(for snoozeCount: Int) -> NSAlert {
-        return NSAlert()
-    }
 
     private static func getMessageText(for snoozeCount: Int) -> String {
         switch snoozeCount {
