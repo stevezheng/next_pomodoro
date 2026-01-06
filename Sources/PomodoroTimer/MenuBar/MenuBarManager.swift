@@ -18,10 +18,14 @@ class MenuBarManager: NSObject {
 
     func configure(with stateMachine: StateMachine) {
         self.stateMachine = stateMachine
+        // 初始化时更新 UI
+        updateUI(for: stateMachine.currentState)
+    }
 
-        stateMachine.onStateChanged = { [weak self] state in
-            self?.updateUI(for: state)
-        }
+    /// 更新 UI（供外部调用）
+    func refreshUI() {
+        guard let state = stateMachine?.currentState else { return }
+        updateUI(for: state)
     }
 
     // MARK: - UI 更新
@@ -115,10 +119,6 @@ class MenuBarManager: NSObject {
                 pauseItem.target = self
                 menu.addItem(pauseItem)
             }
-            let interruptItem = NSMenuItem(
-                title: "打断", action: #selector(handleInterrupt), keyEquivalent: "i")
-            interruptItem.target = self
-            menu.addItem(interruptItem)
             let stopItem = NSMenuItem(
                 title: "停止", action: #selector(handleStop), keyEquivalent: "s")
             stopItem.target = self

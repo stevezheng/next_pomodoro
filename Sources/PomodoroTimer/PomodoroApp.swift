@@ -50,8 +50,14 @@ class PomodoroApp: NSObject {
 
     // MARK: - 状态变化处理
 
+    private var previousState: TimerState = .idle
+
     private func handleStateChange(to newState: TimerState) {
-        let oldState = stateMachine.getContext()
+        let oldState = previousState
+        previousState = newState
+
+        // 更新菜单栏 UI
+        menuBarManager.refreshUI()
 
         // 检测是否是暂停/恢复事件
         if case .focus(let newCtx) = newState {
@@ -65,6 +71,7 @@ class PomodoroApp: NSObject {
                 // 检测恢复
                 if oldCtx.isPaused && !newCtx.isPaused {
                     startFocusTimer(remainingSeconds: newCtx.remainingSeconds)
+                    saveState()
                     return
                 }
             }
@@ -79,6 +86,7 @@ class PomodoroApp: NSObject {
                 // 检测恢复
                 if oldCtx.isPaused && !newCtx.isPaused {
                     startBreakTimer(remainingSeconds: newCtx.remainingSeconds)
+                    saveState()
                     return
                 }
             }
@@ -90,7 +98,7 @@ class PomodoroApp: NSObject {
 
         switch newState {
         case .idle:
-            saveState()
+            break
 
         case .focus(let ctx):
             if !ctx.isPaused {
@@ -101,14 +109,19 @@ class PomodoroApp: NSObject {
             // 只有当从前一个状态切换到 snooze 状态时才显示弹窗
             // 如果已经在 snooze 状态中，不要重复显示弹窗
             if case .snooze = oldState {
-                // 已经在 snooze 状态，不需要显示弹窗
-                saveState()
+                // 已经在 snooze 状态，只保存不显示弹窗
             } else {
                 // 首次进入 snooze 状态，显示弹窗
                 handleSnoozeState(ctx)
             }
 
         case .breakTime(let ctx):
+            // 检测是否从非休息状态进入休息状态，显示休息开始弹窗
+            if case .breakTime = oldState {
+                // 已经在休息状态，不需要显示弹窗
+            } else {
+                AlertManager.showBreakStart(breakDuration: ctx.totalSeconds)
+            }
             if !ctx.isPaused {
                 startBreakTimer(remainingSeconds: ctx.remainingSeconds)
             }
@@ -147,11 +160,33 @@ class PomodoroApp: NSObject {
         currentSnoozeDeadline?.cancel()
 
         let deadline = DispatchWorkItem { [weak self] in
-            self?.stateMachine?.handle(.timeUp)
+            // 推迟时间结束，显示弹窗让用户再次选择
+            self?.handleSnoozeTimeUp()
         }
 
         currentSnoozeDeadline = deadline
         DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(seconds), execute: deadline)
+    }
+
+    /// 处理推迟时间结束
+    private func handleSnoozeTimeUp() {
+        guard case .snooze(let ctx) = stateMachine.getContext() else { return }
+
+        if ctx.snoozeCount < Constants.maxSnoozeCount {
+            // 还可以继续推迟，显示弹窗
+            AlertManager.showSnoozeTimeUp(snoozeCount: ctx.snoozeCount) { [weak self] response in
+                switch response {
+                case .startBreak:
+                    self?.stateMachine?.handle(.startBreak)
+                case .snooze(let seconds):
+                    self?.stateMachine?.handle(.snooze(seconds))
+                    self?.startSnoozeTimer(seconds: seconds)
+                }
+            }
+        } else {
+            // 达到最大推迟次数，强制休息
+            showForceBreakAlert()
+        }
     }
 
     // MARK: - 时间更新
