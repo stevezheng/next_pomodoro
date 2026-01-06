@@ -202,7 +202,8 @@ class PomodoroApp {
       context.timeLeft,
       (timeLeft) => {
         this.stateMachine.updateTimeLeft(timeLeft)
-        this.trayManager.updateTitle(this.stateMachine.getCurrentState(), context)
+        // 实时获取最新的 context，而不是使用闭包中的旧引用
+        this.trayManager.updateTitle(this.stateMachine.getCurrentState(), this.stateMachine.getContext())
       },
       () => {
         this.stateMachine.handleEvent({ type: EventType.TIME_UP })
