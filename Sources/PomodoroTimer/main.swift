@@ -2,7 +2,8 @@ import AppKit
 
 // MARK: - 应用代理
 class AppDelegate: NSObject, NSApplicationDelegate {
-    private var pomodoroApp: PomodoroApp!
+    // 必须强引用持有 PomodoroApp，否则会被释放
+    var pomodoroApp: PomodoroApp!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // 初始化番茄钟应用
@@ -30,6 +31,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 // MARK: - 主入口
+// 必须保持对 AppDelegate 的强引用
 let app = NSApplication.shared
 let delegate = AppDelegate()
 app.delegate = delegate

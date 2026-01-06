@@ -31,6 +31,13 @@ class MenuBarManager: NSObject {
         updateMenu(for: state)
     }
 
+    /// 仅更新标题（用于 timer tick，避免触发完整的状态变化）
+    func updateTitleOnly(_ title: String) {
+        DispatchQueue.main.async { [weak self] in
+            self?.statusItem?.button?.title = title
+        }
+    }
+
     private func updateTitle(for state: TimerState) {
         let title = formatTitle(for: state)
         DispatchQueue.main.async { [weak self] in

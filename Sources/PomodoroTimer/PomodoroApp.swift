@@ -149,17 +149,17 @@ class PomodoroApp: NSObject {
     // MARK: - 时间更新
 
     private func updateFocusTime(_ remaining: Int) {
-        guard case .focus(var ctx) = stateMachine.getContext() else { return }
-        ctx.remainingSeconds = remaining
-        // 触发 UI 更新
-        stateMachine.onStateChanged?(.focus(ctx))
+        // 仅更新菜单栏标题，避免触发状态机回调导致无限递归
+        let formattedTime = String(format: "%02d:%02d", remaining / 60, remaining % 60)
+        let title = "\(Constants.icons.focus) \(formattedTime)"
+        menuBarManager.updateTitleOnly(title)
     }
 
     private func updateBreakTime(_ remaining: Int) {
-        guard case .breakTime(var ctx) = stateMachine.getContext() else { return }
-        ctx.remainingSeconds = remaining
-        // 触发 UI 更新
-        stateMachine.onStateChanged?(.breakTime(ctx))
+        // 仅更新菜单栏标题，避免触发状态机回调导致无限递归
+        let formattedTime = String(format: "%02d:%02d", remaining / 60, remaining % 60)
+        let title = "\(Constants.icons.breakTime) \(formattedTime)"
+        menuBarManager.updateTitleOnly(title)
     }
 
     // MARK: - 推迟状态处理
