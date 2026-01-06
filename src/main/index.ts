@@ -151,6 +151,8 @@ class PomodoroApp {
   private updateUI(state: TimerState, context: any): void {
     this.trayManager.updateTitle(state, context)
     this.trayManager.updateMenu(state)
+    // 状态改变时重置暂停状态
+    this.trayManager.setPaused(false)
   }
 
   /**
@@ -158,6 +160,7 @@ class PomodoroApp {
    */
   private startTimer(): void {
     console.log('启动计时器...')
+    this.trayManager.setPaused(false)
     const result = this.stateMachine.handleEvent({ type: EventType.START })
     console.log('状态转换结果:', result)
 
@@ -183,6 +186,8 @@ class PomodoroApp {
   private pauseTimer(): void {
     const remaining = this.timer.pause()
     console.log(`计时器暂停，剩余 ${remaining} 秒`)
+    this.trayManager.setPaused(true)
+    this.trayManager.updateMenu(this.stateMachine.getCurrentState())
   }
 
   /**
@@ -190,6 +195,9 @@ class PomodoroApp {
    */
   private resumeTimer(): void {
     const context = this.stateMachine.getContext()
+    this.trayManager.setPaused(false)
+    this.trayManager.updateMenu(this.stateMachine.getCurrentState())
+
     this.timer.resume(
       context.timeLeft,
       (timeLeft) => {
@@ -206,11 +214,13 @@ class PomodoroApp {
    * 停止计时器
    */
   private stopTimer(): void {
+    console.log('停止计时器')
     this.timer.stop()
-    // 重置到 Idle 状态
-    ;(this.stateMachine as any).currentState = TimerState.IDLE
-    ;(this.stateMachine as any).context.timeLeft = 0
-    this.updateUI(TimerState.IDLE, this.stateMachine.getContext())
+    this.trayManager.setPaused(false)
+    // 通过状态机处理停止事件，让状态机决定如何转换
+    this.stateMachine.handleEvent({ type: EventType.STOP })
+    this.updateUI(this.stateMachine.getCurrentState(), this.stateMachine.getContext())
+    this.saveState()
   }
 
   /**

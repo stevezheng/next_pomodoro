@@ -38,7 +38,9 @@ export enum EventType {
   /** 开始休息 */
   START_BREAK = 'start_break',
   /** 休息完成 */
-  BREAK_COMPLETE = 'break_complete'
+  BREAK_COMPLETE = 'break_complete',
+  /** 手动停止/打断 */
+  STOP = 'stop'
 }
 
 /**

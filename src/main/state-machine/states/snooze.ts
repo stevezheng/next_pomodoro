@@ -53,6 +53,16 @@ export class SnoozeState extends State {
       }
     }
 
+    if (event.type === EventType.STOP) {
+      // 手动停止，取消推迟，直接回到 Idle
+      return {
+        nextState: TimerState.IDLE,
+        timeLeft: 0,
+        shouldNotify: false,
+        shouldResetSnooze: true
+      }
+    }
+
     // 其他事件保持当前状态
     return {
       nextState: TimerState.SNOOZE,

@@ -17,6 +17,16 @@ export class FocusState extends State {
       }
     }
 
+    if (event.type === EventType.STOP) {
+      // 手动停止，回到 Idle 状态，不计入完成
+      return {
+        nextState: TimerState.IDLE,
+        timeLeft: 0,
+        shouldNotify: false,
+        shouldResetSnooze: true
+      }
+    }
+
     // 其他事件保持当前状态
     return {
       nextState: TimerState.FOCUS,

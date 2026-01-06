@@ -11,6 +11,7 @@ import { MENU_ITEMS } from '@shared/constants'
 export class TrayManager {
   private tray: Tray | null = null
   private onActionCallback: ((action: string) => void) | null = null
+  private isPaused: boolean = false
 
   constructor() {
     this.createTray()
@@ -72,8 +73,9 @@ export class TrayManager {
     const items: Electron.MenuItemConstructorOptions[] = []
 
     // 显示当前状态
+    const statusText = this.isPaused ? `${TitleFormatter.getStatusText(state)} (已暂停)` : TitleFormatter.getStatusText(state)
     items.push({
-      label: TitleFormatter.getStatusText(state),
+      label: statusText,
       enabled: false
     })
 
@@ -90,8 +92,12 @@ export class TrayManager {
 
       case TimerState.FOCUS:
         items.push({
-          label: MENU_ITEMS.PAUSE,
-          click: () => this.handleAction('pause')
+          label: this.isPaused ? MENU_ITEMS.RESUME : MENU_ITEMS.PAUSE,
+          click: () => this.handleAction(this.isPaused ? 'resume' : 'pause')
+        })
+        items.push({
+          label: MENU_ITEMS.STOP,
+          click: () => this.handleAction('stop')
         })
         break
 
@@ -100,12 +106,20 @@ export class TrayManager {
           label: '开始休息',
           click: () => this.handleAction('startBreak')
         })
+        items.push({
+          label: MENU_ITEMS.STOP,
+          click: () => this.handleAction('stop')
+        })
         break
 
       case TimerState.BREAK:
         items.push({
-          label: MENU_ITEMS.PAUSE,
-          click: () => this.handleAction('pause')
+          label: this.isPaused ? MENU_ITEMS.RESUME : MENU_ITEMS.PAUSE,
+          click: () => this.handleAction(this.isPaused ? 'resume' : 'pause')
+        })
+        items.push({
+          label: MENU_ITEMS.STOP,
+          click: () => this.handleAction('stop')
         })
         break
     }
@@ -139,6 +153,22 @@ export class TrayManager {
    */
   public onAction(callback: (action: string) => void): void {
     this.onActionCallback = callback
+  }
+
+  /**
+   * 设置暂停状态
+   * @param paused 是否暂停
+   */
+  public setPaused(paused: boolean): void {
+    this.isPaused = paused
+  }
+
+  /**
+   * 获取暂停状态
+   * @returns 是否暂停
+   */
+  public isPausedState(): boolean {
+    return this.isPaused
   }
 
   /**

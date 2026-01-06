@@ -18,6 +18,16 @@ export class BreakState extends State {
       }
     }
 
+    if (event.type === EventType.STOP) {
+      // 手动停止休息，提前回到 Idle
+      return {
+        nextState: TimerState.IDLE,
+        timeLeft: 0,
+        shouldNotify: false,
+        shouldResetSnooze: true
+      }
+    }
+
     // 其他事件保持当前状态
     return {
       nextState: TimerState.BREAK,
