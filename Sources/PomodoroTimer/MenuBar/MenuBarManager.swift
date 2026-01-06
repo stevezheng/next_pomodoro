@@ -61,7 +61,8 @@ class MenuBarManager: NSObject {
 
         case .breakTime(let ctx):
             let pauseIndicator = ctx.isPaused ? " (已暂停)" : ""
-            return "\(Constants.icons.breakTime) \(formatTime(ctx.remainingSeconds))\(pauseIndicator)"
+            return
+                "\(Constants.icons.breakTime) \(formatTime(ctx.remainingSeconds))\(pauseIndicator)"
         }
     }
 
@@ -82,43 +83,86 @@ class MenuBarManager: NSObject {
 
         switch state {
         case .idle:
-            menu.addItem(NSMenuItem(title: "开始番茄钟", action: #selector(handleStart), keyEquivalent: "s"))
+            let startItem = NSMenuItem(
+                title: "开始番茄钟", action: #selector(handleStart), keyEquivalent: "s")
+            startItem.target = self
+            menu.addItem(startItem)
             menu.addItem(NSMenuItem.separator())
-            menu.addItem(NSMenuItem(title: "完成数: \(completedPomodoros())", action: nil, keyEquivalent: ""))
+            menu.addItem(
+                NSMenuItem(title: "完成数: \(completedPomodoros())", action: nil, keyEquivalent: ""))
             menu.addItem(NSMenuItem.separator())
-            menu.addItem(NSMenuItem(title: "退出", action: #selector(handleQuit), keyEquivalent: "q"))
+            let quitItem = NSMenuItem(
+                title: "退出", action: #selector(handleQuit), keyEquivalent: "q")
+            quitItem.target = self
+            menu.addItem(quitItem)
 
         case .focus(let ctx):
             if ctx.isPaused {
-                menu.addItem(NSMenuItem(title: "继续", action: #selector(handleResume), keyEquivalent: "r"))
+                let resumeItem = NSMenuItem(
+                    title: "继续", action: #selector(handleResume), keyEquivalent: "r")
+                resumeItem.target = self
+                menu.addItem(resumeItem)
             } else {
-                menu.addItem(NSMenuItem(title: "暂停", action: #selector(handlePause), keyEquivalent: "p"))
+                let pauseItem = NSMenuItem(
+                    title: "暂停", action: #selector(handlePause), keyEquivalent: "p")
+                pauseItem.target = self
+                menu.addItem(pauseItem)
             }
-            menu.addItem(NSMenuItem(title: "停止", action: #selector(handleStop), keyEquivalent: "s"))
+            let stopItem = NSMenuItem(
+                title: "停止", action: #selector(handleStop), keyEquivalent: "s")
+            stopItem.target = self
+            menu.addItem(stopItem)
             menu.addItem(NSMenuItem.separator())
-            menu.addItem(NSMenuItem(title: "完成数: \(completedPomodoros())", action: nil, keyEquivalent: ""))
+            menu.addItem(
+                NSMenuItem(title: "完成数: \(completedPomodoros())", action: nil, keyEquivalent: ""))
             menu.addItem(NSMenuItem.separator())
-            menu.addItem(NSMenuItem(title: "退出", action: #selector(handleQuit), keyEquivalent: "q"))
+            let quitItem = NSMenuItem(
+                title: "退出", action: #selector(handleQuit), keyEquivalent: "q")
+            quitItem.target = self
+            menu.addItem(quitItem)
 
         case .snooze:
-            menu.addItem(NSMenuItem(title: "开始休息", action: #selector(handleStartBreak), keyEquivalent: "b"))
-            menu.addItem(NSMenuItem(title: "停止", action: #selector(handleStop), keyEquivalent: "s"))
+            let startBreakItem = NSMenuItem(
+                title: "开始休息", action: #selector(handleStartBreak), keyEquivalent: "b")
+            startBreakItem.target = self
+            menu.addItem(startBreakItem)
+            let stopItem = NSMenuItem(
+                title: "停止", action: #selector(handleStop), keyEquivalent: "s")
+            stopItem.target = self
+            menu.addItem(stopItem)
             menu.addItem(NSMenuItem.separator())
-            menu.addItem(NSMenuItem(title: "完成数: \(completedPomodoros())", action: nil, keyEquivalent: ""))
+            menu.addItem(
+                NSMenuItem(title: "完成数: \(completedPomodoros())", action: nil, keyEquivalent: ""))
             menu.addItem(NSMenuItem.separator())
-            menu.addItem(NSMenuItem(title: "退出", action: #selector(handleQuit), keyEquivalent: "q"))
+            let quitItem = NSMenuItem(
+                title: "退出", action: #selector(handleQuit), keyEquivalent: "q")
+            quitItem.target = self
+            menu.addItem(quitItem)
 
         case .breakTime(let ctx):
             if ctx.isPaused {
-                menu.addItem(NSMenuItem(title: "继续", action: #selector(handleResume), keyEquivalent: "r"))
+                let resumeItem = NSMenuItem(
+                    title: "继续", action: #selector(handleResume), keyEquivalent: "r")
+                resumeItem.target = self
+                menu.addItem(resumeItem)
             } else {
-                menu.addItem(NSMenuItem(title: "暂停", action: #selector(handlePause), keyEquivalent: "p"))
+                let pauseItem = NSMenuItem(
+                    title: "暂停", action: #selector(handlePause), keyEquivalent: "p")
+                pauseItem.target = self
+                menu.addItem(pauseItem)
             }
-            menu.addItem(NSMenuItem(title: "停止", action: #selector(handleStop), keyEquivalent: "s"))
+            let stopItem = NSMenuItem(
+                title: "停止", action: #selector(handleStop), keyEquivalent: "s")
+            stopItem.target = self
+            menu.addItem(stopItem)
             menu.addItem(NSMenuItem.separator())
-            menu.addItem(NSMenuItem(title: "完成数: \(completedPomodoros())", action: nil, keyEquivalent: ""))
+            menu.addItem(
+                NSMenuItem(title: "完成数: \(completedPomodoros())", action: nil, keyEquivalent: ""))
             menu.addItem(NSMenuItem.separator())
-            menu.addItem(NSMenuItem(title: "退出", action: #selector(handleQuit), keyEquivalent: "q"))
+            let quitItem = NSMenuItem(
+                title: "退出", action: #selector(handleQuit), keyEquivalent: "q")
+            quitItem.target = self
+            menu.addItem(quitItem)
         }
 
         return menu
