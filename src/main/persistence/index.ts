@@ -1,1 +1,0 @@
-export { PersistenceStore } from './store'

@@ -1,24 +1,16 @@
-# Dependencies
-node_modules/
+# Swift
+.swift-build/
+.swift-dep/
+.build/
 
-# Build output
-out/
-dist/
-release/
-
-# Electron
-*.log
+# macOS
 .DS_Store
+*.dmg
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
 
-# OS
-Thumbs.db
-
-# Environment
-.env
-.env.local
+# Debug
+.debug/
