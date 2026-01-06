@@ -21,6 +21,10 @@ class FocusHandler: StateHandler {
             // 手动停止，不增加完成数
             return .idle
 
+        case .interrupt:
+            // 被打断，不增加完成数
+            return .idle
+
         case .pause:
             // 暂停
             var pausedCtx = focusCtx

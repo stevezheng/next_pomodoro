@@ -57,6 +57,7 @@ enum EventType {
     case timeUp
     case snooze(Int)  // 推迟秒数
     case startBreak
+    case interrupt    // 打断（被外部因素中断）
 }
 
 // MARK: - 应用数据

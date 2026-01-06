@@ -115,6 +115,10 @@ class MenuBarManager: NSObject {
                 pauseItem.target = self
                 menu.addItem(pauseItem)
             }
+            let interruptItem = NSMenuItem(
+                title: "打断", action: #selector(handleInterrupt), keyEquivalent: "i")
+            interruptItem.target = self
+            menu.addItem(interruptItem)
             let stopItem = NSMenuItem(
                 title: "停止", action: #selector(handleStop), keyEquivalent: "s")
             stopItem.target = self
@@ -187,6 +191,10 @@ class MenuBarManager: NSObject {
 
     @objc private func handleStop() {
         stateMachine?.handle(.stop)
+    }
+
+    @objc private func handleInterrupt() {
+        stateMachine?.handle(.interrupt)
     }
 
     @objc private func handlePause() {
