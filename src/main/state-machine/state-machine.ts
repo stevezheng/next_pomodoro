@@ -114,7 +114,7 @@ export class StateMachine extends EventEmitter {
    */
   public updateTimeLeft(timeLeft: number): void {
     this.context.timeLeft = timeLeft
-    this.emit('tick', { timeLeft, context: { ...this.context } })
+    // 不再 emit 'tick' 事件，UI 更新由计时器回调直接处理
   }
 
   /**

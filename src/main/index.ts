@@ -66,11 +66,8 @@ class PomodoroApp {
       await this.handleNotification(type, context)
     })
 
-    // 监听时间变化
-    this.stateMachine.on('tick', ({ timeLeft, context }) => {
-      this.stateMachine.updateTimeLeft(timeLeft)
-      this.trayManager.updateTitle(this.stateMachine.getCurrentState(), context)
-    })
+    // 注意：不再监听 'tick' 事件，因为在计时器回调中直接处理 UI 更新
+    // 避免 updateTimeLeft → emit('tick') → updateTimeLeft 的无限递归
   }
 
   /**
@@ -160,9 +157,12 @@ class PomodoroApp {
    * 启动计时器
    */
   private startTimer(): void {
+    console.log('启动计时器...')
     const result = this.stateMachine.handleEvent({ type: EventType.START })
+    console.log('状态转换结果:', result)
 
     if (result.nextState === TimerState.FOCUS) {
+      console.log('启动 Focus 计时器，时长:', result.timeLeft, '秒')
       this.timer.start(
         result.timeLeft,
         (timeLeft) => {
@@ -170,6 +170,7 @@ class PomodoroApp {
           this.trayManager.updateTitle(TimerState.FOCUS, this.stateMachine.getContext())
         },
         () => {
+          console.log('计时器时间到！')
           this.stateMachine.handleEvent({ type: EventType.TIME_UP })
         }
       )
@@ -226,8 +227,27 @@ class PomodoroApp {
     const savedContext = this.persistence.loadContext()
     if (savedContext.currentState && savedContext.currentState !== TimerState.IDLE) {
       this.stateMachine.restore(savedContext)
-      this.updateUI(this.stateMachine.getCurrentState(), this.stateMachine.getContext())
+      const currentState = this.stateMachine.getCurrentState()
+      const timeLeft = this.stateMachine.getContext().timeLeft
+
+      this.updateUI(currentState, this.stateMachine.getContext())
       console.log('状态已恢复:', savedContext)
+
+      // 如果是 FOCUS 或 BREAK 状态，启动计时器
+      if (currentState === TimerState.FOCUS || currentState === TimerState.BREAK) {
+        console.log(`恢复计时器，状态: ${currentState}, 剩余时间: ${timeLeft} 秒`)
+        this.timer.resume(
+          timeLeft,
+          (tickTimeLeft) => {
+            this.stateMachine.updateTimeLeft(tickTimeLeft)
+            this.trayManager.updateTitle(this.stateMachine.getCurrentState(), this.stateMachine.getContext())
+          },
+          () => {
+            console.log('恢复的计时器时间到！')
+            this.stateMachine.handleEvent({ type: EventType.TIME_UP })
+          }
+        )
+      }
     }
   }
 

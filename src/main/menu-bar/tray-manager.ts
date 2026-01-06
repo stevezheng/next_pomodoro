@@ -47,6 +47,7 @@ export class TrayManager {
     if (!this.tray) return
 
     const title = TitleFormatter.format(state, context)
+    console.log('更新 Tray 标题:', title)
     this.tray.setTitle(title)
   }
 
