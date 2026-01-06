@@ -98,7 +98,15 @@ class PomodoroApp: NSObject {
             }
 
         case .snooze(let ctx):
-            handleSnoozeState(ctx)
+            // 只有当从前一个状态切换到 snooze 状态时才显示弹窗
+            // 如果已经在 snooze 状态中，不要重复显示弹窗
+            if case .snooze = oldState {
+                // 已经在 snooze 状态，不需要显示弹窗
+                saveState()
+            } else {
+                // 首次进入 snooze 状态，显示弹窗
+                handleSnoozeState(ctx)
+            }
 
         case .breakTime(let ctx):
             if !ctx.isPaused {
