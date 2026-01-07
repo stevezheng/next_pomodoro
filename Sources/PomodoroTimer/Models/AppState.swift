@@ -76,15 +76,28 @@ struct AppData: Codable {
 
 // MARK: - 设置
 struct Settings: Codable, Equatable {
-    var focusDuration: Int  // 番茄时长（秒）
-    var baseBreakDuration: Int  // 基础休息时长（秒）
-    var longBreakDuration: Int  // 长休息时长（秒）
+    var focusDurationMinutes: Int  // 番茄时长（分钟）
+    var baseBreakDurationMinutes: Int  // 基础休息时长（分钟）
+    var longBreakDurationMinutes: Int  // 长休息时长（分钟）
     var longBreakInterval: Int  // 每多少个番茄后触发长休息
     var testMode: Bool  // 测试模式
     var soundEnabled: Bool  // 是否启用声音
     var soundVolume: Float  // 声音音量 (0.0 - 1.0)
     var barkEnabled: Bool  // 是否启用 Bark 推送
     var barkKey: String  // Bark 推送 Key
+
+    // 兼容性属性（自动计算）
+    var focusDuration: Int {
+        return testMode ? focusDurationMinutes : focusDurationMinutes * 60
+    }
+
+    var baseBreakDuration: Int {
+        return testMode ? baseBreakDurationMinutes : baseBreakDurationMinutes * 60
+    }
+
+    var longBreakDuration: Int {
+        return testMode ? longBreakDurationMinutes : longBreakDurationMinutes * 60
+    }
 
     static let `default` = Settings()
 
@@ -99,12 +112,12 @@ struct Settings: Codable, Equatable {
         barkEnabled: Bool = false,
         barkKey: String = ""
     ) {
-        // 根据测试模式调整时长
-        self.testMode = testMode
-        self.focusDuration = testMode ? focusDuration : focusDuration * 60
-        self.baseBreakDuration = testMode ? baseBreakDuration : baseBreakDuration * 60
-        self.longBreakDuration = testMode ? longBreakDuration : longBreakDuration * 60
+        // 直接存储分钟值，不根据 testMode 转换
+        self.focusDurationMinutes = focusDuration
+        self.baseBreakDurationMinutes = baseBreakDuration
+        self.longBreakDurationMinutes = longBreakDuration
         self.longBreakInterval = longBreakInterval
+        self.testMode = testMode
         self.soundEnabled = soundEnabled
         self.soundVolume = soundVolume
         self.barkEnabled = barkEnabled

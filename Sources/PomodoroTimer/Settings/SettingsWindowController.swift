@@ -12,7 +12,6 @@ class SettingsWindowController: NSWindowController {
     private var barkEnabledCheckbox: NSButton!
     private var barkKeyField: NSTextField!
     private var barkTestButton: NSButton!
-    private var barkSaveButton: NSButton!
     private var testModeCheckbox: NSButton!
     private var iCloudStatusLabel: NSTextField!
     private var persistenceManager: PersistenceManager?
@@ -172,11 +171,6 @@ class SettingsWindowController: NSWindowController {
         barkTestButton.bezelStyle = .rounded
         barkKeyRow.addArrangedSubview(barkTestButton)
 
-        // 保存按钮
-        barkSaveButton = NSButton(title: "保存", target: self, action: #selector(saveBarkClicked))
-        barkSaveButton.bezelStyle = .rounded
-        barkKeyRow.addArrangedSubview(barkSaveButton)
-
         stackView.addArrangedSubview(barkKeyRow)
 
         // Bark 提示信息
@@ -222,13 +216,16 @@ class SettingsWindowController: NSWindowController {
         buttonRow.spacing = 10
 
         let cancelButton = NSButton(title: "取消", target: self, action: #selector(cancelClicked))
-        let saveButton = NSButton(title: "保存", target: self, action: #selector(saveClicked))
+        let saveButton = NSButton(title: "保存", target: self, action: #selector(saveClickedNoClose))
         saveButton.bezelStyle = .rounded
-        saveButton.keyEquivalent = "\r"
+        let okButton = NSButton(title: "确定", target: self, action: #selector(saveClicked))
+        okButton.bezelStyle = .rounded
+        okButton.keyEquivalent = "\r"
 
         buttonRow.addArrangedSubview(NSView())  // Spacer
         buttonRow.addArrangedSubview(cancelButton)
         buttonRow.addArrangedSubview(saveButton)
+        buttonRow.addArrangedSubview(okButton)
 
         stackView.addArrangedSubview(buttonRow)
     }
@@ -282,11 +279,10 @@ class SettingsWindowController: NSWindowController {
     }
 
     private func loadCurrentSettings() {
-        // 根据测试模式转换时间显示
-        let divider = currentSettings.testMode ? 1 : 60
-        focusDurationField.integerValue = currentSettings.focusDuration / divider
-        breakDurationField.integerValue = currentSettings.baseBreakDuration / divider
-        longBreakDurationField.integerValue = currentSettings.longBreakDuration / divider
+        // 直接使用存储的分钟数值，不需要转换
+        focusDurationField.integerValue = currentSettings.focusDurationMinutes
+        breakDurationField.integerValue = currentSettings.baseBreakDurationMinutes
+        longBreakDurationField.integerValue = currentSettings.longBreakDurationMinutes
         longBreakIntervalField.integerValue = currentSettings.longBreakInterval
         soundEnabledCheckbox.state = currentSettings.soundEnabled ? .on : .off
         soundVolumeSlider.floatValue = currentSettings.soundVolume
@@ -298,7 +294,6 @@ class SettingsWindowController: NSWindowController {
         soundVolumeSlider.isEnabled = soundEnabledCheckbox.state == .on
         barkKeyField.isEnabled = barkEnabledCheckbox.state == .on
         barkTestButton.isEnabled = barkEnabledCheckbox.state == .on
-        barkSaveButton.isEnabled = barkEnabledCheckbox.state == .on
     }
 
     @objc private func soundEnabledChanged() {
@@ -308,7 +303,6 @@ class SettingsWindowController: NSWindowController {
     @objc private func barkEnabledChanged() {
         barkKeyField.isEnabled = barkEnabledCheckbox.state == .on
         barkTestButton.isEnabled = barkEnabledCheckbox.state == .on
-        barkSaveButton.isEnabled = barkEnabledCheckbox.state == .on
     }
 
     @objc private func testBarkClicked() {
@@ -322,28 +316,6 @@ class SettingsWindowController: NSWindowController {
         BarkManager.shared.configure(enabled: true, key: key)
         BarkManager.shared.testNotification()
         showAlert(title: "测试发送成功", message: "请检查你的 iOS 设备是否收到 Bark 推送")
-    }
-
-    @objc private func saveBarkClicked() {
-        // 只保存 Bark 相关设置
-        let key = barkKeyField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        if key.isEmpty {
-            showAlert(title: "错误", message: "请先输入 Bark Key")
-            return
-        }
-
-        let barkEnabled = barkEnabledCheckbox.state == .on
-
-        // 创建更新后的设置（仅修改 bark 相关字段）
-        var updatedSettings = currentSettings
-        updatedSettings.barkEnabled = barkEnabled
-        updatedSettings.barkKey = key
-
-        // 调用保存回调
-        onSave?(updatedSettings)
-        currentSettings = updatedSettings
-
-        showAlert(title: "保存成功", message: "Bark Key 已保存")
     }
 
     private func showAlert(title: String, message: String) {
@@ -374,16 +346,21 @@ class SettingsWindowController: NSWindowController {
         window?.close()
     }
 
-    @objc private func saveClicked() {
+    @objc private func saveClickedNoClose() {
         let testMode = testModeCheckbox.state == .on
 
         // 验证长休息间隔，至少为 1
         let interval = max(1, longBreakIntervalField.integerValue)
 
+        // 获取用户输入的值（分钟数）
+        let focusMinutes = focusDurationField.integerValue
+        let breakMinutes = breakDurationField.integerValue
+        let longBreakMinutes = longBreakDurationField.integerValue
+
         let newSettings = Settings(
-            focusDuration: focusDurationField.integerValue,
-            baseBreakDuration: breakDurationField.integerValue,
-            longBreakDuration: longBreakDurationField.integerValue,
+            focusDuration: focusMinutes,
+            baseBreakDuration: breakMinutes,
+            longBreakDuration: longBreakMinutes,
             longBreakInterval: interval,
             testMode: testMode,
             soundEnabled: soundEnabledCheckbox.state == .on,
@@ -393,6 +370,11 @@ class SettingsWindowController: NSWindowController {
         )
 
         onSave?(newSettings)
+        currentSettings = newSettings  // 更新当前设置引用
+    }
+
+    @objc private func saveClicked() {
+        saveClickedNoClose()
         window?.close()
     }
 
