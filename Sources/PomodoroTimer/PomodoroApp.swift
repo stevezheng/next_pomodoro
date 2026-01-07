@@ -215,16 +215,14 @@ class PomodoroApp: NSObject {
         // 创建一个新的计时器用于倒计时显示
         snoozeTimer = PreciseTimer()
 
-        // 获取当前累计推迟秒数
+        // 获取当前累计推迟秒数（用户已选择的推迟时长总和）
         guard case .snooze(let ctx) = stateMachine.getContext() else { return }
-        let baseAccumulated = ctx.accumulatedSeconds
+        let totalAccumulated = ctx.accumulatedSeconds  // 固定值，不随时间变化
 
         snoozeTimer?.start(
             durationSeconds: seconds,
             onTick: { [weak self] remaining in
-                // 显示累计推迟时间 + 当前倒计时
-                let elapsed = seconds - remaining
-                let totalAccumulated = baseAccumulated + elapsed
+                // 显示累计推迟时间（固定）和剩余倒计时
                 self?.updateSnoozeTime(remaining: remaining, accumulated: totalAccumulated)
             },
             onComplete: { [weak self] in
