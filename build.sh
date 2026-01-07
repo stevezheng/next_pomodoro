@@ -26,6 +26,9 @@ cp .build/release/PomodoroTimer PomodoroTimer.app/Contents/MacOS/
 # 复制 Info.plist
 cp Resources/Info.plist PomodoroTimer.app/Contents/
 
+# 复制应用图标
+cp Resources/AppIcon.icns PomodoroTimer.app/Contents/Resources/
+
 # 设置可执行权限
 chmod +x PomodoroTimer.app/Contents/MacOS/PomodoroTimer
 
