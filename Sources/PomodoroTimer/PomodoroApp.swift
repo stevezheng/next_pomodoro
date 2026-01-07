@@ -24,6 +24,10 @@ class PomodoroApp: NSObject {
         persistenceManager = PersistenceManager()
         let savedSettings = persistenceManager.loadSettings() ?? Settings.default
 
+        Log.info(
+            "加载设置 - baseBreakDuration: \(savedSettings.baseBreakDuration)秒, testMode: \(savedSettings.testMode)"
+        )
+
         // 使用加载的设置初始化状态机
         stateMachine = StateMachine(settings: savedSettings)
         timer = PreciseTimer()
@@ -160,10 +164,25 @@ class PomodoroApp: NSObject {
             }
 
         case .breakTime(let ctx):
-            // 检测是否从非休息状态进入休息状态，显示休息开始弹窗
+            // 检测是否从非休息状态进入休息状态
+            let isFirstEntry: Bool
             if case .breakTime = oldState {
-                // 已经在休息状态，不需要显示弹窗
+                isFirstEntry = false
             } else {
+                isFirstEntry = true
+            }
+
+            Log.info(
+                "进入休息状态 - totalSeconds: \(ctx.totalSeconds), remainingSeconds: \(ctx.remainingSeconds), 首次进入: \(isFirstEntry)"
+            )
+
+            if isFirstEntry {
+                // 首次进入休息状态
+                if ctx.totalSeconds != ctx.remainingSeconds {
+                    Log.error(
+                        "BUG: totalSeconds(\(ctx.totalSeconds)) != remainingSeconds(\(ctx.remainingSeconds))"
+                    )
+                }
                 // 停止推迟计时器
                 snoozeTimer?.stop()
                 snoozeTimer = nil
@@ -173,8 +192,12 @@ class PomodoroApp: NSObject {
                 AlertManager.showBreakStart(
                     breakDuration: ctx.totalSeconds, isLongBreak: ctx.isLongBreak)
             }
+
             if !ctx.isPaused {
-                startBreakTimer(remainingSeconds: ctx.remainingSeconds)
+                // 首次进入时使用 totalSeconds，恢复时使用 remainingSeconds
+                let breakTime = isFirstEntry ? ctx.totalSeconds : ctx.remainingSeconds
+                Log.info("启动休息计时器 - 使用时间: \(breakTime)秒 (首次进入: \(isFirstEntry))")
+                startBreakTimer(remainingSeconds: breakTime)
             }
         }
 
