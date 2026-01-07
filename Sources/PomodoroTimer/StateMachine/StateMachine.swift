@@ -62,6 +62,10 @@ class StateMachine {
         context.completedPomodoros
     }
 
+    var settings: Settings {
+        context.settings
+    }
+
     init(settings: Settings = .default) {
         self.context = StateMachineContext(settings: settings)
         setupHandlers()

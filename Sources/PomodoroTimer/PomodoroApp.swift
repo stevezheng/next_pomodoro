@@ -358,7 +358,7 @@ class PomodoroApp: NSObject {
     private func saveState() {
         let state = stateMachine.getContext()
         let pomodoros = stateMachine.completedPomodoros
-        let settings = persistenceManager.loadSettings() ?? Settings.default
+        let settings = stateMachine.settings
         persistenceManager.saveAppState(state: state, pomodoros: pomodoros, settings: settings)
     }
 
