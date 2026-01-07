@@ -12,6 +12,7 @@ class SettingsWindowController: NSWindowController {
     private var barkEnabledCheckbox: NSButton!
     private var barkKeyField: NSTextField!
     private var barkTestButton: NSButton!
+    private var barkSaveButton: NSButton!
     private var testModeCheckbox: NSButton!
 
     private var currentSettings: Settings
@@ -160,6 +161,11 @@ class SettingsWindowController: NSWindowController {
         barkTestButton.bezelStyle = .rounded
         barkKeyRow.addArrangedSubview(barkTestButton)
 
+        // 保存按钮
+        barkSaveButton = NSButton(title: "保存", target: self, action: #selector(saveBarkClicked))
+        barkSaveButton.bezelStyle = .rounded
+        barkKeyRow.addArrangedSubview(barkSaveButton)
+
         stackView.addArrangedSubview(barkKeyRow)
 
         // Bark 提示信息
@@ -259,6 +265,7 @@ class SettingsWindowController: NSWindowController {
         soundVolumeSlider.isEnabled = soundEnabledCheckbox.state == .on
         barkKeyField.isEnabled = barkEnabledCheckbox.state == .on
         barkTestButton.isEnabled = barkEnabledCheckbox.state == .on
+        barkSaveButton.isEnabled = barkEnabledCheckbox.state == .on
     }
 
     @objc private func soundEnabledChanged() {
@@ -268,6 +275,7 @@ class SettingsWindowController: NSWindowController {
     @objc private func barkEnabledChanged() {
         barkKeyField.isEnabled = barkEnabledCheckbox.state == .on
         barkTestButton.isEnabled = barkEnabledCheckbox.state == .on
+        barkSaveButton.isEnabled = barkEnabledCheckbox.state == .on
     }
 
     @objc private func testBarkClicked() {
@@ -281,6 +289,28 @@ class SettingsWindowController: NSWindowController {
         BarkManager.shared.configure(enabled: true, key: key)
         BarkManager.shared.testNotification()
         showAlert(title: "测试发送成功", message: "请检查你的 iOS 设备是否收到 Bark 推送")
+    }
+
+    @objc private func saveBarkClicked() {
+        // 只保存 Bark 相关设置
+        let key = barkKeyField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        if key.isEmpty {
+            showAlert(title: "错误", message: "请先输入 Bark Key")
+            return
+        }
+
+        let barkEnabled = barkEnabledCheckbox.state == .on
+
+        // 创建更新后的设置（仅修改 bark 相关字段）
+        var updatedSettings = currentSettings
+        updatedSettings.barkEnabled = barkEnabled
+        updatedSettings.barkKey = key
+
+        // 调用保存回调
+        onSave?(updatedSettings)
+        currentSettings = updatedSettings
+
+        showAlert(title: "保存成功", message: "Bark Key 已保存")
     }
 
     private func showAlert(title: String, message: String) {
