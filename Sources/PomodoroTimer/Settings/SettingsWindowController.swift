@@ -8,6 +8,9 @@ class SettingsWindowController: NSWindowController {
     private var longBreakDurationField: NSTextField!
     private var soundEnabledCheckbox: NSButton!
     private var soundVolumeSlider: NSSlider!
+    private var barkEnabledCheckbox: NSButton!
+    private var barkKeyField: NSTextField!
+    private var barkTestButton: NSButton!
     private var testModeCheckbox: NSButton!
 
     private var currentSettings: Settings
@@ -18,7 +21,7 @@ class SettingsWindowController: NSWindowController {
         self.onSave = onSave
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 400, height: 350),
+            contentRect: NSRect(x: 0, y: 0, width: 450, height: 480),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -118,6 +121,48 @@ class SettingsWindowController: NSWindowController {
         separator3.boxType = .separator
         stackView.addArrangedSubview(separator3)
 
+        // Bark 推送设置区域
+        let barkLabel = NSTextField(labelWithString: "Bark 推送设置")
+        barkLabel.font = NSFont.boldSystemFont(ofSize: 14)
+        stackView.addArrangedSubview(barkLabel)
+
+        // 启用 Bark
+        barkEnabledCheckbox = NSButton(
+            checkboxWithTitle: "启用 Bark 推送", target: self, action: #selector(barkEnabledChanged))
+        stackView.addArrangedSubview(barkEnabledCheckbox)
+
+        // Bark Key 输入
+        let barkKeyRow = NSStackView()
+        barkKeyRow.orientation = .horizontal
+        barkKeyRow.spacing = 10
+
+        let barkKeyLabel = NSTextField(labelWithString: "Bark Key:")
+        barkKeyLabel.widthAnchor.constraint(equalToConstant: 80).isActive = true
+        barkKeyRow.addArrangedSubview(barkKeyLabel)
+
+        barkKeyField = NSTextField()
+        barkKeyField.placeholderString = "输入你的 Bark Key"
+        barkKeyField.widthAnchor.constraint(greaterThanOrEqualToConstant: 200).isActive = true
+        barkKeyRow.addArrangedSubview(barkKeyField)
+
+        // 测试按钮
+        barkTestButton = NSButton(title: "测试", target: self, action: #selector(testBarkClicked))
+        barkTestButton.bezelStyle = .rounded
+        barkKeyRow.addArrangedSubview(barkTestButton)
+
+        stackView.addArrangedSubview(barkKeyRow)
+
+        // Bark 提示信息
+        let barkHintLabel = NSTextField(labelWithString: "提示：在 Bark App 中复制你的 Key")
+        barkHintLabel.font = NSFont.systemFont(ofSize: 10)
+        barkHintLabel.textColor = .secondaryLabelColor
+        stackView.addArrangedSubview(barkHintLabel)
+
+        // 分隔线
+        let separator4 = NSBox()
+        separator4.boxType = .separator
+        stackView.addArrangedSubview(separator4)
+
         // 测试模式
         testModeCheckbox = NSButton(checkboxWithTitle: "测试模式（使用秒代替分钟）", target: nil, action: nil)
         stackView.addArrangedSubview(testModeCheckbox)
@@ -167,11 +212,45 @@ class SettingsWindowController: NSWindowController {
         longBreakDurationField.integerValue = currentSettings.longBreakDuration / divider
         soundEnabledCheckbox.state = currentSettings.soundEnabled ? .on : .off
         soundVolumeSlider.floatValue = currentSettings.soundVolume
+        barkEnabledCheckbox.state = currentSettings.barkEnabled ? .on : .off
+        barkKeyField.stringValue = currentSettings.barkKey
         testModeCheckbox.state = currentSettings.testMode ? .on : .off
+
+        // 更新启用状态
+        soundVolumeSlider.isEnabled = soundEnabledCheckbox.state == .on
+        barkKeyField.isEnabled = barkEnabledCheckbox.state == .on
+        barkTestButton.isEnabled = barkEnabledCheckbox.state == .on
     }
 
     @objc private func soundEnabledChanged() {
         soundVolumeSlider.isEnabled = soundEnabledCheckbox.state == .on
+    }
+
+    @objc private func barkEnabledChanged() {
+        barkKeyField.isEnabled = barkEnabledCheckbox.state == .on
+        barkTestButton.isEnabled = barkEnabledCheckbox.state == .on
+    }
+
+    @objc private func testBarkClicked() {
+        // 保存当前设置并测试
+        let key = barkKeyField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        if key.isEmpty {
+            showAlert(title: "错误", message: "请先输入 Bark Key")
+            return
+        }
+
+        BarkManager.shared.configure(enabled: true, key: key)
+        BarkManager.shared.testNotification()
+        showAlert(title: "测试发送成功", message: "请检查你的 iOS 设备是否收到 Bark 推送")
+    }
+
+    private func showAlert(title: String, message: String) {
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = message
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: "确定")
+        alert.runModal()
     }
 
     @objc private func cancelClicked() {
@@ -187,7 +266,9 @@ class SettingsWindowController: NSWindowController {
             longBreakDuration: longBreakDurationField.integerValue,
             testMode: testMode,
             soundEnabled: soundEnabledCheckbox.state == .on,
-            soundVolume: soundVolumeSlider.floatValue
+            soundVolume: soundVolumeSlider.floatValue,
+            barkEnabled: barkEnabledCheckbox.state == .on,
+            barkKey: barkKeyField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         )
 
         onSave?(newSettings)

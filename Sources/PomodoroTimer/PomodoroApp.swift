@@ -36,6 +36,7 @@ class PomodoroApp: NSObject {
         // 从设置加载声音配置
         if let settings = persistenceManager.loadSettings() {
             soundManager.configure(enabled: settings.soundEnabled, volume: settings.soundVolume)
+            BarkManager.shared.configure(enabled: settings.barkEnabled, key: settings.barkKey)
         }
 
         // 监听状态变化
@@ -147,6 +148,9 @@ class PomodoroApp: NSObject {
             } else {
                 // 首次进入 snooze 状态，播放专注完成提示音并显示弹窗
                 soundManager.playFocusComplete()
+                // 发送 Bark 推送
+                let completedCount = ctx.completedPomodoros + 1
+                BarkManager.shared.sendFocusComplete(count: completedCount)
                 handleSnoozeState(ctx)
                 // 首次进入时，如果有累计时间，也需要启动计时器显示
                 // 注意：这里不启动计时器，等待弹窗回调中用户选择后再启动
@@ -315,6 +319,13 @@ class PomodoroApp: NSObject {
         soundManager.playBreakComplete()
 
         let completedCount = stateMachine.completedPomodoros
+
+        // 发送 Bark 推送
+        if case .breakTime(let ctx) = stateMachine.getContext() {
+            BarkManager.shared.sendBreakComplete(
+                count: completedCount, isLongBreak: ctx.isLongBreak)
+        }
+
         AlertManager.showBreakComplete(completedCount: completedCount)
         stateMachine?.handle(.timeUp)
     }
@@ -347,11 +358,14 @@ class PomodoroApp: NSObject {
         // 更新声音管理器
         soundManager.configure(enabled: settings.soundEnabled, volume: settings.soundVolume)
 
+        // 更新 Bark 管理器
+        BarkManager.shared.configure(enabled: settings.barkEnabled, key: settings.barkKey)
+
         // 更新状态机设置
         stateMachine.updateSettings(settings)
 
         Log.info(
-            "设置已更新: focusDuration=\(settings.focusDuration)s, breakDuration=\(settings.baseBreakDuration)s, soundEnabled=\(settings.soundEnabled)"
+            "设置已更新: focusDuration=\(settings.focusDuration)s, breakDuration=\(settings.baseBreakDuration)s, soundEnabled=\(settings.soundEnabled), barkEnabled=\(settings.barkEnabled)"
         )
     }
 }

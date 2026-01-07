@@ -82,6 +82,8 @@ struct Settings: Codable, Equatable {
     var testMode: Bool  // 测试模式
     var soundEnabled: Bool  // 是否启用声音
     var soundVolume: Float  // 声音音量 (0.0 - 1.0)
+    var barkEnabled: Bool  // 是否启用 Bark 推送
+    var barkKey: String  // Bark 推送 Key
 
     static let `default` = Settings()
 
@@ -91,7 +93,9 @@ struct Settings: Codable, Equatable {
         longBreakDuration: Int = 15,
         testMode: Bool = true,
         soundEnabled: Bool = true,
-        soundVolume: Float = 0.8
+        soundVolume: Float = 0.8,
+        barkEnabled: Bool = false,
+        barkKey: String = ""
     ) {
         // 根据测试模式调整时长
         self.testMode = testMode
@@ -100,6 +104,8 @@ struct Settings: Codable, Equatable {
         self.longBreakDuration = testMode ? longBreakDuration : longBreakDuration * 60
         self.soundEnabled = soundEnabled
         self.soundVolume = soundVolume
+        self.barkEnabled = barkEnabled
+        self.barkKey = barkKey
     }
 
     /// 获取推迟选项（秒）
