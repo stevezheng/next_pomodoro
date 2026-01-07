@@ -116,10 +116,13 @@ struct Settings: Codable, Equatable {
         testMode ? [5, 10, 15] : [5 * 60, 10 * 60, 15 * 60]
     }
 
-    /// 计算休息时间（含惩罚）
+    /// 计算休息时间（含额外休息奖励）
+    /// 规则：总休息时间 = 基础休息 + (累计推迟时间 ÷ 5)
     func calculateBreakDuration(snoozeSeconds: Int, isLongBreak: Bool = false) -> Int {
         let baseDuration = isLongBreak ? longBreakDuration : baseBreakDuration
-        let penalty = testMode ? snoozeSeconds / 5 : snoozeSeconds / 300
-        return baseDuration + penalty
+        // 测试模式：每5秒推迟增加1秒休息
+        // 正常模式：每5分钟(300秒)推迟增加1分钟(60秒)休息
+        let bonus = testMode ? (snoozeSeconds / 5) : (snoozeSeconds / 300) * 60
+        return baseDuration + bonus
     }
 }

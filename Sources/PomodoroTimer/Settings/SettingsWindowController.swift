@@ -153,6 +153,11 @@ class SettingsWindowController: NSWindowController {
         barkKeyField.isSelectable = true
         barkKeyField.isBordered = true
         barkKeyField.bezelStyle = .squareBezel
+        barkKeyField.usesSingleLineMode = true
+        barkKeyField.lineBreakMode = .byTruncatingTail
+        // 启用标准编辑快捷键（Cmd+A, Cmd+C, Cmd+V 等）
+        barkKeyField.allowsEditingTextAttributes = false
+        barkKeyField.importsGraphics = false
         barkKeyField.widthAnchor.constraint(greaterThanOrEqualToConstant: 200).isActive = true
         barkKeyRow.addArrangedSubview(barkKeyField)
 
