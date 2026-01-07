@@ -1,0 +1,45 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B6B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#EE5A5A;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- 背景 - 圆角矩形 -->
+  <rect x="0" y="0" width="1024" height="1024" rx="220" ry="220" fill="url(#bgGradient)"/>
+
+  <!-- 番茄形状 -->
+  <ellipse cx="512" cy="580" rx="280" ry="300" fill="#E74C3C" opacity="0.9"/>
+
+  <!-- 番茄高光 -->
+  <ellipse cx="420" cy="480" rx="60" ry="80" fill="#FFFFFF" opacity="0.15"/>
+
+  <!-- 时钟圆圈 -->
+  <circle cx="512" cy="580" r="200" fill="#FFFFFF" opacity="0.95"/>
+
+  <!-- 时钟刻度 -->
+  <g stroke="#2C3E50" stroke-width="8" stroke-linecap="round">
+    <line x1="512" y1="410" x2="512" y2="430"/>
+    <line x1="512" y1="730" x2="512" y2="750"/>
+    <line x1="382" y1="580" x2="402" y2="580"/>
+    <line x1="622" y1="580" x2="642" y2="580"/>
+  </g>
+
+  <!-- 时钟指针 - 指向 10:10 位置 -->
+  <g stroke="#2C3E50" stroke-linecap="round">
+    <!-- 时针 -->
+    <line x1="512" y1="580" x2="512" y2="480" stroke-width="12"/>
+    <!-- 分针 -->
+    <line x1="512" y1="580" x2="600" y2="520" stroke-width="10"/>
+    <!-- 中心点 -->
+    <circle cx="512" cy="580" r="14" fill="#2C3E50" stroke="none"/>
+  </g>
+
+  <!-- 番茄叶子 -->
+  <g fill="#27AE60">
+    <ellipse cx="480" cy="270" rx="50" ry="25" transform="rotate(-30 480 270)"/>
+    <ellipse cx="512" cy="255" rx="50" ry="25" transform="rotate(0 512 255)"/>
+    <ellipse cx="544" cy="270" rx="50" ry="25" transform="rotate(30 544 270)"/>
+  </g>
+</svg>
