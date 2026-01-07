@@ -101,6 +101,12 @@ class StateMachine {
         context.updateSettings(settings)
     }
 
+    /// 直接更新当前状态（不触发状态转换回调）
+    /// 用于暂停时更新剩余时间等场景
+    func updateCurrentState(_ state: TimerState) {
+        context.currentState = state
+    }
+
     private func handler(for state: TimerState) -> StateHandler {
         switch state {
         case .idle:

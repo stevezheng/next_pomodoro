@@ -79,7 +79,12 @@ class PomodoroApp: NSObject {
             if case .focus(let oldCtx) = oldState {
                 // 检测暂停
                 if !oldCtx.isPaused && newCtx.isPaused {
-                    timer.stop()
+                    // 暂停计时器并获取剩余时间
+                    let remaining = timer.pause()
+                    // 更新状态中的剩余时间
+                    var updatedCtx = newCtx
+                    updatedCtx.remainingSeconds = remaining
+                    stateMachine.updateCurrentState(.focus(updatedCtx))
                     saveState()
                     return
                 }
@@ -94,7 +99,12 @@ class PomodoroApp: NSObject {
             if case .breakTime(let oldCtx) = oldState {
                 // 检测暂停
                 if !oldCtx.isPaused && newCtx.isPaused {
-                    timer.stop()
+                    // 暂停计时器并获取剩余时间
+                    let remaining = timer.pause()
+                    // 更新状态中的剩余时间
+                    var updatedCtx = newCtx
+                    updatedCtx.remainingSeconds = remaining
+                    stateMachine.updateCurrentState(.breakTime(updatedCtx))
                     saveState()
                     return
                 }
