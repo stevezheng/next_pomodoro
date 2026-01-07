@@ -66,6 +66,7 @@ class AlertManager {
     // MARK: - 休息开始提醒
 
     static func showBreakStart(breakDuration: Int, isLongBreak: Bool = false) {
+        Log.debug("显示休息开始弹窗 - 休息时长: \(breakDuration)秒, 是否长休息: \(isLongBreak)")
         DispatchQueue.main.async {
             let alert = NSAlert()
             let breakType = isLongBreak ? "长休息" : "休息"

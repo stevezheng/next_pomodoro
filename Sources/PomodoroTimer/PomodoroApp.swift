@@ -20,10 +20,14 @@ class PomodoroApp: NSObject {
     }
 
     private func setupCore() {
-        stateMachine = StateMachine()
+        // 先加载设置
+        persistenceManager = PersistenceManager()
+        let savedSettings = persistenceManager.loadSettings() ?? Settings.default
+
+        // 使用加载的设置初始化状态机
+        stateMachine = StateMachine(settings: savedSettings)
         timer = PreciseTimer()
         menuBarManager = MenuBarManager()
-        persistenceManager = PersistenceManager()
         soundManager = SoundManager.shared
 
         menuBarManager.configure(with: stateMachine, persistenceManager: persistenceManager)
@@ -33,11 +37,10 @@ class PomodoroApp: NSObject {
             self?.openSettings()
         }
 
-        // 从设置加载声音配置
-        if let settings = persistenceManager.loadSettings() {
-            soundManager.configure(enabled: settings.soundEnabled, volume: settings.soundVolume)
-            BarkManager.shared.configure(enabled: settings.barkEnabled, key: settings.barkKey)
-        }
+        // 配置声音和 Bark
+        soundManager.configure(
+            enabled: savedSettings.soundEnabled, volume: savedSettings.soundVolume)
+        BarkManager.shared.configure(enabled: savedSettings.barkEnabled, key: savedSettings.barkKey)
 
         // 监听状态变化
         stateMachine.onStateChanged = { [weak self] state in
@@ -193,6 +196,7 @@ class PomodoroApp: NSObject {
     }
 
     private func startBreakTimer(remainingSeconds: Int) {
+        Log.debug("开始休息计时器 - 剩余秒数: \(remainingSeconds)")
         timer.start(
             durationSeconds: remainingSeconds,
             onTick: { [weak self] remaining in

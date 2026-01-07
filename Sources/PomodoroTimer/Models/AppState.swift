@@ -123,6 +123,10 @@ struct Settings: Codable, Equatable {
         // 测试模式：每5秒推迟增加1秒休息
         // 正常模式：每5分钟(300秒)推迟增加1分钟(60秒)休息
         let bonus = testMode ? (snoozeSeconds / 5) : (snoozeSeconds / 300) * 60
-        return baseDuration + bonus
+        let result = baseDuration + bonus
+        Log.debug(
+            "计算休息时间 - 基础: \(baseDuration)秒, 推迟: \(snoozeSeconds)秒, 奖励: \(bonus)秒, 总计: \(result)秒, 测试模式: \(testMode)"
+        )
+        return result
     }
 }

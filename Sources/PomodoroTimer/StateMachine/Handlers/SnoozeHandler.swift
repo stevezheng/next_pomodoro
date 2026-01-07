@@ -50,6 +50,10 @@ class SnoozeHandler: StateHandler {
             isLongBreak: isLongBreak
         )
 
+        Log.debug(
+            "创建休息状态 - 推迟秒数: \(snoozeCtx.accumulatedSeconds), 基础休息: \(context.settings.baseBreakDuration), 计算后休息: \(breakDuration), 是否长休息: \(isLongBreak)"
+        )
+
         let breakContext = BreakContext(
             remainingSeconds: breakDuration,
             totalSeconds: breakDuration,

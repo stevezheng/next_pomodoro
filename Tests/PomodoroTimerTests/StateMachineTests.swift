@@ -200,4 +200,28 @@ final class StateMachineTests: XCTestCase {
 
         XCTAssertEqual(stateMachine.completedPomodoros, 4)
     }
+
+    // MARK: - 推迟后休息时间测试
+
+    func testSnoozeIncreasesBreakDuration() {
+        let settings = Settings(focusDuration: 10, baseBreakDuration: 5, testMode: true)
+        stateMachine.updateSettings(settings)
+
+        stateMachine.handle(.start)
+        stateMachine.handle(.timeUp)
+
+        // 推迟10秒
+        stateMachine.handle(.snooze(10))
+
+        // 开始休息
+        stateMachine.handle(.startBreak)
+
+        if case .breakTime(let ctx) = stateMachine.currentState {
+            // 基础休息5秒 + 推迟10秒的奖励(10/5=2秒) = 7秒
+            XCTAssertEqual(ctx.totalSeconds, 7, "Break duration should be 5 + (10/5) = 7 seconds")
+            XCTAssertEqual(ctx.remainingSeconds, 7, "Remaining seconds should equal total seconds at start")
+        } else {
+            XCTFail("Expected breakTime state")
+        }
+    }
 }
