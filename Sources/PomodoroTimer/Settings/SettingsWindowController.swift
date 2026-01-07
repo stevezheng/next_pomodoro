@@ -28,7 +28,7 @@ class SettingsWindowController: NSWindowController {
         self.onSave = onSave
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 450, height: 560),
+            contentRect: NSRect(x: 0, y: 0, width: 450, height: 750),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
