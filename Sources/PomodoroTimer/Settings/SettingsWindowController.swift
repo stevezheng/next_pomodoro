@@ -216,16 +216,13 @@ class SettingsWindowController: NSWindowController {
         buttonRow.spacing = 10
 
         let cancelButton = NSButton(title: "取消", target: self, action: #selector(cancelClicked))
-        let saveButton = NSButton(title: "保存", target: self, action: #selector(saveClickedNoClose))
+        let saveButton = NSButton(title: "确定", target: self, action: #selector(saveClicked))
         saveButton.bezelStyle = .rounded
-        let okButton = NSButton(title: "确定", target: self, action: #selector(saveClicked))
-        okButton.bezelStyle = .rounded
-        okButton.keyEquivalent = "\r"
+        saveButton.keyEquivalent = "\r"
 
         buttonRow.addArrangedSubview(NSView())  // Spacer
         buttonRow.addArrangedSubview(cancelButton)
         buttonRow.addArrangedSubview(saveButton)
-        buttonRow.addArrangedSubview(okButton)
 
         stackView.addArrangedSubview(buttonRow)
     }
@@ -346,7 +343,7 @@ class SettingsWindowController: NSWindowController {
         window?.close()
     }
 
-    @objc private func saveClickedNoClose() {
+    @objc private func saveClicked() {
         let testMode = testModeCheckbox.state == .on
 
         // 验证长休息间隔，至少为 1
@@ -370,11 +367,6 @@ class SettingsWindowController: NSWindowController {
         )
 
         onSave?(newSettings)
-        currentSettings = newSettings  // 更新当前设置引用
-    }
-
-    @objc private func saveClicked() {
-        saveClickedNoClose()
         window?.close()
     }
 
