@@ -14,16 +14,22 @@ class SettingsWindowController: NSWindowController {
     private var barkTestButton: NSButton!
     private var barkSaveButton: NSButton!
     private var testModeCheckbox: NSButton!
+    private var iCloudStatusLabel: NSTextField!
+    private var persistenceManager: PersistenceManager?
 
     private var currentSettings: Settings
     private var onSave: ((Settings) -> Void)?
 
-    init(settings: Settings, onSave: @escaping (Settings) -> Void) {
+    init(
+        settings: Settings, persistenceManager: PersistenceManager,
+        onSave: @escaping (Settings) -> Void
+    ) {
         self.currentSettings = settings
+        self.persistenceManager = persistenceManager
         self.onSave = onSave
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 450, height: 520),
+            contentRect: NSRect(x: 0, y: 0, width: 450, height: 560),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -188,6 +194,28 @@ class SettingsWindowController: NSWindowController {
         testModeCheckbox = NSButton(checkboxWithTitle: "测试模式（使用秒代替分钟）", target: nil, action: nil)
         stackView.addArrangedSubview(testModeCheckbox)
 
+        // 分隔线
+        let separator5 = NSBox()
+        separator5.boxType = .separator
+        stackView.addArrangedSubview(separator5)
+
+        // iCloud 同步状态
+        let iCloudLabel = NSTextField(labelWithString: "iCloud 同步")
+        iCloudLabel.font = NSFont.boldSystemFont(ofSize: 14)
+        stackView.addArrangedSubview(iCloudLabel)
+
+        // iCloud 状态显示
+        iCloudStatusLabel = NSTextField(labelWithString: "")
+        iCloudStatusLabel.font = NSFont.systemFont(ofSize: 12)
+        iCloudStatusLabel.textColor = .secondaryLabelColor
+        stackView.addArrangedSubview(iCloudStatusLabel)
+        updateiCloudStatus()
+
+        let iCloudHintLabel = NSTextField(labelWithString: "提示：需要在系统设置中登录 iCloud 账户")
+        iCloudHintLabel.font = NSFont.systemFont(ofSize: 10)
+        iCloudHintLabel.textColor = .secondaryLabelColor
+        stackView.addArrangedSubview(iCloudHintLabel)
+
         // 按钮区域
         let buttonRow = NSStackView()
         buttonRow.orientation = .horizontal
@@ -325,6 +353,21 @@ class SettingsWindowController: NSWindowController {
         alert.alertStyle = .informational
         alert.addButton(withTitle: "确定")
         alert.runModal()
+    }
+
+    private func updateiCloudStatus() {
+        guard let persistenceManager = persistenceManager else {
+            iCloudStatusLabel.stringValue = "状态：未知"
+            return
+        }
+
+        if persistenceManager.isiCloudAvailable() {
+            iCloudStatusLabel.stringValue = "✅ 状态：已启用（设置将自动同步到 iCloud）"
+            iCloudStatusLabel.textColor = .systemGreen
+        } else {
+            iCloudStatusLabel.stringValue = "⚠️ 状态：未启用（请在系统设置中登录 iCloud）"
+            iCloudStatusLabel.textColor = .systemOrange
+        }
     }
 
     @objc private func cancelClicked() {

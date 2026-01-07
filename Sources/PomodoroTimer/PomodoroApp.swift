@@ -367,8 +367,10 @@ class PomodoroApp: NSObject {
     private func openSettings() {
         let currentSettings = persistenceManager.loadSettings() ?? Settings.default
 
-        settingsWindowController = SettingsWindowController(settings: currentSettings) {
-            [weak self] newSettings in
+        settingsWindowController = SettingsWindowController(
+            settings: currentSettings,
+            persistenceManager: persistenceManager
+        ) { [weak self] newSettings in
             self?.applySettings(newSettings)
         }
         settingsWindowController?.showWindow()
