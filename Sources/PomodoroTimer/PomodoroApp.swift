@@ -137,12 +137,19 @@ class PomodoroApp: NSObject {
         case .snooze(let ctx):
             // 只有当从前一个状态切换到 snooze 状态时才显示弹窗
             // 如果已经在 snooze 状态中，不要重复显示弹窗
-            if case .snooze = oldState {
-                // 已经在 snooze 状态，只保存不显示弹窗
+            if case .snooze(let oldCtx) = oldState {
+                // 已经在 snooze 状态，说明用户点击了推迟按钮
+                // 计算新增加的推迟时间并启动计时器
+                let addedSeconds = ctx.accumulatedSeconds - oldCtx.accumulatedSeconds
+                if addedSeconds > 0 {
+                    startSnoozeTimer(seconds: addedSeconds)
+                }
             } else {
                 // 首次进入 snooze 状态，播放专注完成提示音并显示弹窗
                 soundManager.playFocusComplete()
                 handleSnoozeState(ctx)
+                // 首次进入时，如果有累计时间，也需要启动计时器显示
+                // 注意：这里不启动计时器，等待弹窗回调中用户选择后再启动
             }
 
         case .breakTime(let ctx):
@@ -243,7 +250,7 @@ class PomodoroApp: NSObject {
                     self?.stateMachine?.handle(.startBreak)
                 case .snooze(let seconds):
                     self?.stateMachine?.handle(.snooze(seconds))
-                    self?.startSnoozeTimer(seconds: seconds)
+                // 不在这里启动计时器，在状态变化中统一处理
                 }
             }
         } else {
@@ -287,7 +294,7 @@ class PomodoroApp: NSObject {
                 self?.stateMachine?.handle(.startBreak)
             case .snooze(let seconds):
                 self?.stateMachine?.handle(.snooze(seconds))
-                self?.startSnoozeTimer(seconds: seconds)
+            // 不在这里启动计时器，在状态变化中统一处理
             }
         }
     }
