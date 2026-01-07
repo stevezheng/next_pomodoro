@@ -85,6 +85,8 @@ class PomodoroApp: NSObject {
                     var updatedCtx = newCtx
                     updatedCtx.remainingSeconds = remaining
                     stateMachine.updateCurrentState(.focus(updatedCtx))
+                    // 刷新菜单栏显示
+                    menuBarManager.refreshUI()
                     saveState()
                     return
                 }
@@ -105,6 +107,8 @@ class PomodoroApp: NSObject {
                     var updatedCtx = newCtx
                     updatedCtx.remainingSeconds = remaining
                     stateMachine.updateCurrentState(.breakTime(updatedCtx))
+                    // 刷新菜单栏显示
+                    menuBarManager.refreshUI()
                     saveState()
                     return
                 }
