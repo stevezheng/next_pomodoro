@@ -132,6 +132,10 @@ class MenuBarManager: NSObject {
             menu.addItem(stopItem)
             addStatsToMenu(menu)
             menu.addItem(NSMenuItem.separator())
+            let settingsItem = NSMenuItem(
+                title: "设置...", action: #selector(handleSettings), keyEquivalent: "")
+            settingsItem.target = self
+            menu.addItem(settingsItem)
             let quitItem = NSMenuItem(
                 title: "退出", action: #selector(handleQuit), keyEquivalent: "q")
             quitItem.target = self
@@ -148,6 +152,10 @@ class MenuBarManager: NSObject {
             menu.addItem(stopItem)
             addStatsToMenu(menu)
             menu.addItem(NSMenuItem.separator())
+            let settingsItem = NSMenuItem(
+                title: "设置...", action: #selector(handleSettings), keyEquivalent: "")
+            settingsItem.target = self
+            menu.addItem(settingsItem)
             let quitItem = NSMenuItem(
                 title: "退出", action: #selector(handleQuit), keyEquivalent: "q")
             quitItem.target = self
@@ -171,6 +179,10 @@ class MenuBarManager: NSObject {
             menu.addItem(stopItem)
             addStatsToMenu(menu)
             menu.addItem(NSMenuItem.separator())
+            let settingsItem = NSMenuItem(
+                title: "设置...", action: #selector(handleSettings), keyEquivalent: "")
+            settingsItem.target = self
+            menu.addItem(settingsItem)
             let quitItem = NSMenuItem(
                 title: "退出", action: #selector(handleQuit), keyEquivalent: "q")
             quitItem.target = self
