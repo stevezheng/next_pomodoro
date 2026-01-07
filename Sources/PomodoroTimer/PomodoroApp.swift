@@ -271,7 +271,9 @@ class PomodoroApp: NSObject {
 
         if ctx.snoozeCount < Constants.maxSnoozeCount {
             // 还可以继续推迟，显示弹窗
-            AlertManager.showSnoozeTimeUp(snoozeCount: ctx.snoozeCount) { [weak self] response in
+            let settings = stateMachine.settings
+            AlertManager.showSnoozeTimeUp(snoozeCount: ctx.snoozeCount, settings: settings) {
+                [weak self] response in
                 switch response {
                 case .startBreak:
                     self?.stateMachine?.handle(.startBreak)
@@ -315,7 +317,9 @@ class PomodoroApp: NSObject {
     }
 
     private func showSnoozeAlert(snoozeCount: Int) {
-        AlertManager.showFocusComplete(snoozeCount: snoozeCount) { [weak self] response in
+        let settings = stateMachine.settings
+        AlertManager.showFocusComplete(snoozeCount: snoozeCount, settings: settings) {
+            [weak self] response in
             switch response {
             case .startBreak:
                 self?.stateMachine?.handle(.startBreak)

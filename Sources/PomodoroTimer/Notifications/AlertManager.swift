@@ -5,7 +5,9 @@ class AlertManager {
 
     // MARK: - 专注完成提醒
 
-    static func showFocusComplete(snoozeCount: Int, response: @escaping (SnoozeResponse) -> Void) {
+    static func showFocusComplete(
+        snoozeCount: Int, settings: Settings, response: @escaping (SnoozeResponse) -> Void
+    ) {
         Log.debug("显示专注完成弹窗，推迟次数: \(snoozeCount)")
 
         DispatchQueue.main.async {
@@ -15,9 +17,15 @@ class AlertManager {
             alert.addButton(withTitle: "开始休息")
 
             if snoozeCount < Constants.maxSnoozeCount {
-                alert.addButton(withTitle: "推迟 5 秒")
-                alert.addButton(withTitle: "推迟 10 秒")
-                alert.addButton(withTitle: "推迟 15 秒")
+                let snoozeOptions = settings.snoozeOptions
+                // 根据测试模式显示不同的单位
+                let timeUnit = settings.testMode ? "秒" : "分钟"
+                let timeDivider = settings.testMode ? 1 : 60
+
+                for option in snoozeOptions {
+                    let displayTime = option / timeDivider
+                    alert.addButton(withTitle: "推迟 \(displayTime) \(timeUnit)")
+                }
             }
 
             // 设置弹窗属性
@@ -38,16 +46,14 @@ class AlertManager {
 
             let result: SnoozeResponse
             // NSAlert 返回值从 1000 开始，对应按钮索引
-            switch responseCode.rawValue {
-            case 1000:  // 第一个按钮
+            let buttonIndex = responseCode.rawValue - 1000
+            if buttonIndex == 0 {
                 result = .startBreak
-            case 1001:  // 第二个按钮
-                result = .snooze(5)
-            case 1002:  // 第三个按钮
-                result = .snooze(10)
-            case 1003:  // 第四个按钮
-                result = .snooze(15)
-            default:
+            } else if buttonIndex >= 1 && buttonIndex <= settings.snoozeOptions.count {
+                // 使用实际的秒数值
+                let snoozeSeconds = settings.snoozeOptions[buttonIndex - 1]
+                result = .snooze(snoozeSeconds)
+            } else {
                 Log.error("未知的响应代码: \(responseCode.rawValue)")
                 result = .startBreak
             }
@@ -59,8 +65,10 @@ class AlertManager {
 
     // MARK: - 推迟时间结束提醒
 
-    static func showSnoozeTimeUp(snoozeCount: Int, response: @escaping (SnoozeResponse) -> Void) {
-        showFocusComplete(snoozeCount: snoozeCount, response: response)
+    static func showSnoozeTimeUp(
+        snoozeCount: Int, settings: Settings, response: @escaping (SnoozeResponse) -> Void
+    ) {
+        showFocusComplete(snoozeCount: snoozeCount, settings: settings, response: response)
     }
 
     // MARK: - 休息开始提醒
