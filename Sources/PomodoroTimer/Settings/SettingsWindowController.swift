@@ -6,6 +6,7 @@ class SettingsWindowController: NSWindowController {
     private var focusDurationField: NSTextField!
     private var breakDurationField: NSTextField!
     private var longBreakDurationField: NSTextField!
+    private var longBreakIntervalField: NSTextField!
     private var soundEnabledCheckbox: NSButton!
     private var soundVolumeSlider: NSSlider!
     private var barkEnabledCheckbox: NSButton!
@@ -21,7 +22,7 @@ class SettingsWindowController: NSWindowController {
         self.onSave = onSave
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 450, height: 480),
+            contentRect: NSRect(x: 0, y: 0, width: 450, height: 520),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -86,6 +87,11 @@ class SettingsWindowController: NSWindowController {
         longBreakDurationField = longBreakRow.1
         stackView.addArrangedSubview(longBreakRow.0)
 
+        // 长休息间隔
+        let intervalRow = createIntervalRow()
+        longBreakIntervalField = intervalRow.1
+        stackView.addArrangedSubview(intervalRow.0)
+
         // 分隔线
         let separator2 = NSBox()
         separator2.boxType = .separator
@@ -142,6 +148,10 @@ class SettingsWindowController: NSWindowController {
 
         barkKeyField = NSTextField()
         barkKeyField.placeholderString = "输入你的 Bark Key"
+        barkKeyField.isEditable = true
+        barkKeyField.isSelectable = true
+        barkKeyField.isBordered = true
+        barkKeyField.bezelStyle = .squareBezel
         barkKeyField.widthAnchor.constraint(greaterThanOrEqualToConstant: 200).isActive = true
         barkKeyRow.addArrangedSubview(barkKeyField)
 
@@ -195,10 +205,38 @@ class SettingsWindowController: NSWindowController {
 
         let textField = NSTextField()
         textField.placeholderString = placeholder
+        textField.isEditable = true
+        textField.isSelectable = true
+        textField.isBordered = true
+        textField.bezelStyle = .squareBezel
         textField.widthAnchor.constraint(equalToConstant: 80).isActive = true
         row.addArrangedSubview(textField)
 
         let unitLabel = NSTextField(labelWithString: "分钟")
+        row.addArrangedSubview(unitLabel)
+
+        return (row, textField)
+    }
+
+    private func createIntervalRow() -> (NSStackView, NSTextField) {
+        let row = NSStackView()
+        row.orientation = .horizontal
+        row.spacing = 10
+
+        let labelField = NSTextField(labelWithString: "长休息间隔:")
+        labelField.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        row.addArrangedSubview(labelField)
+
+        let textField = NSTextField()
+        textField.placeholderString = "4"
+        textField.isEditable = true
+        textField.isSelectable = true
+        textField.isBordered = true
+        textField.bezelStyle = .squareBezel
+        textField.widthAnchor.constraint(equalToConstant: 80).isActive = true
+        row.addArrangedSubview(textField)
+
+        let unitLabel = NSTextField(labelWithString: "个番茄")
         row.addArrangedSubview(unitLabel)
 
         return (row, textField)
@@ -210,6 +248,7 @@ class SettingsWindowController: NSWindowController {
         focusDurationField.integerValue = currentSettings.focusDuration / divider
         breakDurationField.integerValue = currentSettings.baseBreakDuration / divider
         longBreakDurationField.integerValue = currentSettings.longBreakDuration / divider
+        longBreakIntervalField.integerValue = currentSettings.longBreakInterval
         soundEnabledCheckbox.state = currentSettings.soundEnabled ? .on : .off
         soundVolumeSlider.floatValue = currentSettings.soundVolume
         barkEnabledCheckbox.state = currentSettings.barkEnabled ? .on : .off
@@ -260,10 +299,14 @@ class SettingsWindowController: NSWindowController {
     @objc private func saveClicked() {
         let testMode = testModeCheckbox.state == .on
 
+        // 验证长休息间隔，至少为 1
+        let interval = max(1, longBreakIntervalField.integerValue)
+
         let newSettings = Settings(
             focusDuration: focusDurationField.integerValue,
             baseBreakDuration: breakDurationField.integerValue,
             longBreakDuration: longBreakDurationField.integerValue,
+            longBreakInterval: interval,
             testMode: testMode,
             soundEnabled: soundEnabledCheckbox.state == .on,
             soundVolume: soundVolumeSlider.floatValue,

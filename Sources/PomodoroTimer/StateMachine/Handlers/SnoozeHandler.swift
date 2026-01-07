@@ -41,9 +41,9 @@ class SnoozeHandler: StateHandler {
     private func createBreakState(from snoozeCtx: SnoozeContext, in context: StateMachineContext)
         -> TimerState
     {
-        // 检查是否应该触发长休息（每完成 4 个番茄后）
+        // 检查是否应该触发长休息（根据配置的间隔）
         let nextPomodoroCount = snoozeCtx.completedPomodoros + 1
-        let isLongBreak = nextPomodoroCount % Constants.longBreakInterval == 0
+        let isLongBreak = nextPomodoroCount % context.settings.longBreakInterval == 0
 
         let breakDuration = context.settings.calculateBreakDuration(
             snoozeSeconds: snoozeCtx.accumulatedSeconds,

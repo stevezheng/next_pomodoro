@@ -79,6 +79,7 @@ struct Settings: Codable, Equatable {
     var focusDuration: Int  // 番茄时长（秒）
     var baseBreakDuration: Int  // 基础休息时长（秒）
     var longBreakDuration: Int  // 长休息时长（秒）
+    var longBreakInterval: Int  // 每多少个番茄后触发长休息
     var testMode: Bool  // 测试模式
     var soundEnabled: Bool  // 是否启用声音
     var soundVolume: Float  // 声音音量 (0.0 - 1.0)
@@ -91,6 +92,7 @@ struct Settings: Codable, Equatable {
         focusDuration: Int = 25,
         baseBreakDuration: Int = 5,
         longBreakDuration: Int = 15,
+        longBreakInterval: Int = 4,
         testMode: Bool = true,
         soundEnabled: Bool = true,
         soundVolume: Float = 0.8,
@@ -102,6 +104,7 @@ struct Settings: Codable, Equatable {
         self.focusDuration = testMode ? focusDuration : focusDuration * 60
         self.baseBreakDuration = testMode ? baseBreakDuration : baseBreakDuration * 60
         self.longBreakDuration = testMode ? longBreakDuration : longBreakDuration * 60
+        self.longBreakInterval = longBreakInterval
         self.soundEnabled = soundEnabled
         self.soundVolume = soundVolume
         self.barkEnabled = barkEnabled
