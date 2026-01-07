@@ -11,6 +11,7 @@ enum Constants {
         let breakTime = "☕"
         let warning = "⚠️"
         let stop = "🚫"
+        let longBreak = "🌴"
     }
 
     /// 持久化存储 Key
@@ -19,6 +20,8 @@ enum Constants {
         static let timerState = "timerState"
         static let completedPomodoros = "completedPomodoros"
         static let settings = "settings"
+        static let todayPomodoros = "todayPomodoros"
+        static let lastResetDate = "lastResetDate"
     }
 
     /// 更新频率
@@ -26,4 +29,7 @@ enum Constants {
 
     /// 最大推迟次数
     static let maxSnoozeCount = 3
+
+    /// 长休息触发条件（每完成多少个番茄后触发长休息）
+    static let longBreakInterval = 4
 }

@@ -4,6 +4,10 @@ import AppKit
 class MenuBarManager: NSObject {
     private var statusItem: NSStatusItem?
     private var stateMachine: StateMachine?
+    private var persistenceManager: PersistenceManager?
+
+    /// 设置按钮回调
+    var onOpenSettings: (() -> Void)?
 
     override init() {
         super.init()
@@ -16,8 +20,9 @@ class MenuBarManager: NSObject {
         updateMenu(for: .idle)
     }
 
-    func configure(with stateMachine: StateMachine) {
+    func configure(with stateMachine: StateMachine, persistenceManager: PersistenceManager? = nil) {
         self.stateMachine = stateMachine
+        self.persistenceManager = persistenceManager
         // 初始化时更新 UI
         updateUI(for: stateMachine.currentState)
     }
@@ -72,8 +77,8 @@ class MenuBarManager: NSObject {
 
         case .breakTime(let ctx):
             let pauseIndicator = ctx.isPaused ? " (已暂停)" : ""
-            return
-                "\(Constants.icons.breakTime) \(formatTime(ctx.remainingSeconds))\(pauseIndicator)"
+            let icon = ctx.isLongBreak ? Constants.icons.longBreak : Constants.icons.breakTime
+            return "\(icon) \(formatTime(ctx.remainingSeconds))\(pauseIndicator)"
         }
     }
 
@@ -98,10 +103,12 @@ class MenuBarManager: NSObject {
                 title: "开始番茄钟", action: #selector(handleStart), keyEquivalent: "s")
             startItem.target = self
             menu.addItem(startItem)
+            addStatsToMenu(menu)
             menu.addItem(NSMenuItem.separator())
-            menu.addItem(
-                NSMenuItem(title: "完成数: \(completedPomodoros())", action: nil, keyEquivalent: ""))
-            menu.addItem(NSMenuItem.separator())
+            let settingsItem = NSMenuItem(
+                title: "设置...", action: #selector(handleSettings), keyEquivalent: ",")
+            settingsItem.target = self
+            menu.addItem(settingsItem)
             let quitItem = NSMenuItem(
                 title: "退出", action: #selector(handleQuit), keyEquivalent: "q")
             quitItem.target = self
@@ -123,9 +130,7 @@ class MenuBarManager: NSObject {
                 title: "停止", action: #selector(handleStop), keyEquivalent: "s")
             stopItem.target = self
             menu.addItem(stopItem)
-            menu.addItem(NSMenuItem.separator())
-            menu.addItem(
-                NSMenuItem(title: "完成数: \(completedPomodoros())", action: nil, keyEquivalent: ""))
+            addStatsToMenu(menu)
             menu.addItem(NSMenuItem.separator())
             let quitItem = NSMenuItem(
                 title: "退出", action: #selector(handleQuit), keyEquivalent: "q")
@@ -141,9 +146,7 @@ class MenuBarManager: NSObject {
                 title: "停止", action: #selector(handleStop), keyEquivalent: "s")
             stopItem.target = self
             menu.addItem(stopItem)
-            menu.addItem(NSMenuItem.separator())
-            menu.addItem(
-                NSMenuItem(title: "完成数: \(completedPomodoros())", action: nil, keyEquivalent: ""))
+            addStatsToMenu(menu)
             menu.addItem(NSMenuItem.separator())
             let quitItem = NSMenuItem(
                 title: "退出", action: #selector(handleQuit), keyEquivalent: "q")
@@ -166,9 +169,7 @@ class MenuBarManager: NSObject {
                 title: "停止", action: #selector(handleStop), keyEquivalent: "s")
             stopItem.target = self
             menu.addItem(stopItem)
-            menu.addItem(NSMenuItem.separator())
-            menu.addItem(
-                NSMenuItem(title: "完成数: \(completedPomodoros())", action: nil, keyEquivalent: ""))
+            addStatsToMenu(menu)
             menu.addItem(NSMenuItem.separator())
             let quitItem = NSMenuItem(
                 title: "退出", action: #selector(handleQuit), keyEquivalent: "q")
@@ -181,6 +182,19 @@ class MenuBarManager: NSObject {
 
     private func completedPomodoros() -> Int {
         stateMachine?.completedPomodoros ?? 0
+    }
+
+    private func todayPomodoros() -> Int {
+        persistenceManager?.getTodayPomodoros() ?? 0
+    }
+
+    /// 添加统计信息到菜单
+    private func addStatsToMenu(_ menu: NSMenu) {
+        menu.addItem(NSMenuItem.separator())
+        menu.addItem(
+            NSMenuItem(title: "今日完成: \(todayPomodoros()) 🍅", action: nil, keyEquivalent: ""))
+        menu.addItem(
+            NSMenuItem(title: "总完成数: \(completedPomodoros())", action: nil, keyEquivalent: ""))
     }
 
     // MARK: - 事件处理
@@ -207,6 +221,10 @@ class MenuBarManager: NSObject {
 
     @objc private func handleStartBreak() {
         stateMachine?.handle(.startBreak)
+    }
+
+    @objc private func handleSettings() {
+        onOpenSettings?()
     }
 
     @objc private func handleQuit() {

@@ -70,9 +70,14 @@ class StateMachine {
     private func setupHandlers() {
         handlers = [
             .idle: IdleHandler(),
-            .focus(FocusContext(remainingSeconds: 0, totalSeconds: 0, completedPomodoros: 0)): FocusHandler(),
-            .snooze(SnoozeContext(accumulatedSeconds: 0, snoozeCount: 0, completedPomodoros: 0, focusTotalSeconds: 0)): SnoozeHandler(),
-            .breakTime(BreakContext(remainingSeconds: 0, totalSeconds: 0, completedPomodoros: 0)): BreakHandler()
+            .focus(FocusContext(remainingSeconds: 0, totalSeconds: 0, completedPomodoros: 0)):
+                FocusHandler(),
+            .snooze(
+                SnoozeContext(
+                    accumulatedSeconds: 0, snoozeCount: 0, completedPomodoros: 0,
+                    focusTotalSeconds: 0)): SnoozeHandler(),
+            .breakTime(BreakContext(remainingSeconds: 0, totalSeconds: 0, completedPomodoros: 0)):
+                BreakHandler(),
         ]
     }
 
@@ -92,16 +97,27 @@ class StateMachine {
         onPomodorosUpdated?(pomodoros)
     }
 
+    func updateSettings(_ settings: Settings) {
+        context.updateSettings(settings)
+    }
+
     private func handler(for state: TimerState) -> StateHandler {
         switch state {
         case .idle:
             return handlers[.idle]!
         case .focus:
-            return handlers[.focus(FocusContext(remainingSeconds: 0, totalSeconds: 0, completedPomodoros: 0)) ]!
+            return handlers[
+                .focus(FocusContext(remainingSeconds: 0, totalSeconds: 0, completedPomodoros: 0))]!
         case .snooze:
-            return handlers[.snooze(SnoozeContext(accumulatedSeconds: 0, snoozeCount: 0, completedPomodoros: 0, focusTotalSeconds: 0)) ]!
+            return handlers[
+                .snooze(
+                    SnoozeContext(
+                        accumulatedSeconds: 0, snoozeCount: 0, completedPomodoros: 0,
+                        focusTotalSeconds: 0))]!
         case .breakTime:
-            return handlers[.breakTime(BreakContext(remainingSeconds: 0, totalSeconds: 0, completedPomodoros: 0)) ]!
+            return handlers[
+                .breakTime(
+                    BreakContext(remainingSeconds: 0, totalSeconds: 0, completedPomodoros: 0))]!
         }
     }
 }

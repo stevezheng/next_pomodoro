@@ -21,30 +21,12 @@ class SnoozeHandler: StateHandler {
                 return context.currentState
             } else {
                 // 达到最大推迟次数，强制开始休息
-                let breakDuration = context.settings.calculateBreakDuration(
-                    snoozeSeconds: snoozeCtx.accumulatedSeconds
-                )
-                let breakContext = BreakContext(
-                    remainingSeconds: breakDuration,
-                    totalSeconds: breakDuration,
-                    isPaused: false,
-                    completedPomodoros: snoozeCtx.completedPomodoros
-                )
-                return .breakTime(breakContext)
+                return createBreakState(from: snoozeCtx, in: context)
             }
 
         case .startBreak:
             // 用户主动开始休息
-            let breakDuration = context.settings.calculateBreakDuration(
-                snoozeSeconds: snoozeCtx.accumulatedSeconds
-            )
-            let breakContext = BreakContext(
-                remainingSeconds: breakDuration,
-                totalSeconds: breakDuration,
-                isPaused: false,
-                completedPomodoros: snoozeCtx.completedPomodoros
-            )
-            return .breakTime(breakContext)
+            return createBreakState(from: snoozeCtx, in: context)
 
         case .stop:
             // 取消推迟，回到空闲状态
@@ -53,5 +35,28 @@ class SnoozeHandler: StateHandler {
         default:
             return context.currentState
         }
+    }
+
+    /// 创建休息状态（考虑长休息）
+    private func createBreakState(from snoozeCtx: SnoozeContext, in context: StateMachineContext)
+        -> TimerState
+    {
+        // 检查是否应该触发长休息（每完成 4 个番茄后）
+        let nextPomodoroCount = snoozeCtx.completedPomodoros + 1
+        let isLongBreak = nextPomodoroCount % Constants.longBreakInterval == 0
+
+        let breakDuration = context.settings.calculateBreakDuration(
+            snoozeSeconds: snoozeCtx.accumulatedSeconds,
+            isLongBreak: isLongBreak
+        )
+
+        let breakContext = BreakContext(
+            remainingSeconds: breakDuration,
+            totalSeconds: breakDuration,
+            isPaused: false,
+            completedPomodoros: snoozeCtx.completedPomodoros,
+            isLongBreak: isLongBreak
+        )
+        return .breakTime(breakContext)
     }
 }

@@ -65,13 +65,15 @@ class AlertManager {
 
     // MARK: - 休息开始提醒
 
-    static func showBreakStart(breakDuration: Int) {
+    static func showBreakStart(breakDuration: Int, isLongBreak: Bool = false) {
         DispatchQueue.main.async {
             let alert = NSAlert()
-            alert.messageText = "休息时间到！"
-            alert.informativeText = "你可以休息 \(breakDuration) 秒。"
+            let breakType = isLongBreak ? "长休息" : "休息"
+            let icon = isLongBreak ? Constants.icons.longBreak : Constants.icons.breakTime
+            alert.messageText = "\(breakType)时间到！"
+            alert.informativeText = "你可以休息 \(breakDuration) 秒。\(isLongBreak ? "🎉 恭喜完成一个周期！" : "")"
             alert.alertStyle = .informational
-            alert.icon = Constants.icons.breakTime.toImage()
+            alert.icon = icon.toImage()
             alert.addButton(withTitle: "好的")
             alert.window.level = NSWindow.Level.floating
             NSApp.activate(ignoringOtherApps: true)

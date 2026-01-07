@@ -18,6 +18,11 @@ let package = Package(
             name: "PomodoroTimer",
             dependencies: [],
             path: "Sources/PomodoroTimer"
-        )
+        ),
+        .testTarget(
+            name: "PomodoroTimerTests",
+            dependencies: ["PomodoroTimer"],
+            path: "Tests/PomodoroTimerTests"
+        ),
     ]
 )

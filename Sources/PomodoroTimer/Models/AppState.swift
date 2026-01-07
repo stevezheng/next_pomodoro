@@ -46,6 +46,7 @@ struct BreakContext: Equatable, Hashable, Codable {
     var totalSeconds: Int
     var isPaused: Bool = false
     var completedPomodoros: Int
+    var isLongBreak: Bool = false  // 是否为长休息
 }
 
 // MARK: - 事件类型
@@ -57,7 +58,7 @@ enum EventType {
     case timeUp
     case snooze(Int)  // 推迟秒数
     case startBreak
-    case interrupt    // 打断（被外部因素中断）
+    case interrupt  // 打断（被外部因素中断）
 }
 
 // MARK: - 应用数据
@@ -75,21 +76,30 @@ struct AppData: Codable {
 
 // MARK: - 设置
 struct Settings: Codable, Equatable {
-    var focusDuration: Int      // 番茄时长（秒）
+    var focusDuration: Int  // 番茄时长（秒）
     var baseBreakDuration: Int  // 基础休息时长（秒）
-    var testMode: Bool          // 测试模式
+    var longBreakDuration: Int  // 长休息时长（秒）
+    var testMode: Bool  // 测试模式
+    var soundEnabled: Bool  // 是否启用声音
+    var soundVolume: Float  // 声音音量 (0.0 - 1.0)
 
     static let `default` = Settings()
 
     init(
         focusDuration: Int = 25,
         baseBreakDuration: Int = 5,
-        testMode: Bool = true
+        longBreakDuration: Int = 15,
+        testMode: Bool = true,
+        soundEnabled: Bool = true,
+        soundVolume: Float = 0.8
     ) {
         // 根据测试模式调整时长
         self.testMode = testMode
         self.focusDuration = testMode ? focusDuration : focusDuration * 60
         self.baseBreakDuration = testMode ? baseBreakDuration : baseBreakDuration * 60
+        self.longBreakDuration = testMode ? longBreakDuration : longBreakDuration * 60
+        self.soundEnabled = soundEnabled
+        self.soundVolume = soundVolume
     }
 
     /// 获取推迟选项（秒）
@@ -98,8 +108,9 @@ struct Settings: Codable, Equatable {
     }
 
     /// 计算休息时间（含惩罚）
-    func calculateBreakDuration(snoozeSeconds: Int) -> Int {
+    func calculateBreakDuration(snoozeSeconds: Int, isLongBreak: Bool = false) -> Int {
+        let baseDuration = isLongBreak ? longBreakDuration : baseBreakDuration
         let penalty = testMode ? snoozeSeconds / 5 : snoozeSeconds / 300
-        return baseBreakDuration + penalty
+        return baseDuration + penalty
     }
 }

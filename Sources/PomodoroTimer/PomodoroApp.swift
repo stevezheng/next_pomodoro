@@ -7,8 +7,11 @@ class PomodoroApp: NSObject {
     private var timer: PreciseTimer!
     private var menuBarManager: MenuBarManager!
     private var persistenceManager: PersistenceManager!
+    private var soundManager: SoundManager!
 
     private var currentSnoozeDeadline: DispatchWorkItem?
+    private var snoozeTimer: PreciseTimer?  // 用于推迟期间的倒计时显示
+    private var settingsWindowController: SettingsWindowController?
 
     override init() {
         super.init()
@@ -21,8 +24,19 @@ class PomodoroApp: NSObject {
         timer = PreciseTimer()
         menuBarManager = MenuBarManager()
         persistenceManager = PersistenceManager()
+        soundManager = SoundManager.shared
 
-        menuBarManager.configure(with: stateMachine)
+        menuBarManager.configure(with: stateMachine, persistenceManager: persistenceManager)
+
+        // 设置打开设置窗口回调
+        menuBarManager.onOpenSettings = { [weak self] in
+            self?.openSettings()
+        }
+
+        // 从设置加载声音配置
+        if let settings = persistenceManager.loadSettings() {
+            soundManager.configure(enabled: settings.soundEnabled, volume: settings.soundVolume)
+        }
 
         // 监听状态变化
         stateMachine.onStateChanged = { [weak self] state in
@@ -30,6 +44,7 @@ class PomodoroApp: NSObject {
         }
 
         stateMachine.onPomodorosUpdated = { [weak self] count in
+            self?.persistenceManager.incrementTodayPomodoros()
             self?.saveState()
         }
     }
@@ -111,7 +126,8 @@ class PomodoroApp: NSObject {
             if case .snooze = oldState {
                 // 已经在 snooze 状态，只保存不显示弹窗
             } else {
-                // 首次进入 snooze 状态，显示弹窗
+                // 首次进入 snooze 状态，播放专注完成提示音并显示弹窗
+                soundManager.playFocusComplete()
                 handleSnoozeState(ctx)
             }
 
@@ -120,7 +136,14 @@ class PomodoroApp: NSObject {
             if case .breakTime = oldState {
                 // 已经在休息状态，不需要显示弹窗
             } else {
-                AlertManager.showBreakStart(breakDuration: ctx.totalSeconds)
+                // 停止推迟计时器
+                snoozeTimer?.stop()
+                snoozeTimer = nil
+                // 播放休息开始提示音
+                soundManager.playBreakStart()
+                // 显示弹窗
+                AlertManager.showBreakStart(
+                    breakDuration: ctx.totalSeconds, isLongBreak: ctx.isLongBreak)
             }
             if !ctx.isPaused {
                 startBreakTimer(remainingSeconds: ctx.remainingSeconds)
@@ -158,18 +181,44 @@ class PomodoroApp: NSObject {
 
     private func startSnoozeTimer(seconds: Int) {
         currentSnoozeDeadline?.cancel()
+        snoozeTimer?.stop()
 
-        let deadline = DispatchWorkItem { [weak self] in
-            // 推迟时间结束，显示弹窗让用户再次选择
-            self?.handleSnoozeTimeUp()
-        }
+        // 创建一个新的计时器用于倒计时显示
+        snoozeTimer = PreciseTimer()
 
-        currentSnoozeDeadline = deadline
-        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(seconds), execute: deadline)
+        // 获取当前累计推迟秒数
+        guard case .snooze(let ctx) = stateMachine.getContext() else { return }
+        let baseAccumulated = ctx.accumulatedSeconds
+
+        snoozeTimer?.start(
+            durationSeconds: seconds,
+            onTick: { [weak self] remaining in
+                // 显示累计推迟时间 + 当前倒计时
+                let elapsed = seconds - remaining
+                let totalAccumulated = baseAccumulated + elapsed
+                self?.updateSnoozeTime(remaining: remaining, accumulated: totalAccumulated)
+            },
+            onComplete: { [weak self] in
+                self?.handleSnoozeTimeUp()
+            }
+        )
+    }
+
+    /// 更新推迟状态显示
+    private func updateSnoozeTime(remaining: Int, accumulated: Int) {
+        // 显示格式：⛔ +累计秒s (剩余秒s)
+        let title = "\(Constants.icons.snooze) +\(accumulated)s (\(remaining)s)"
+        menuBarManager.updateTitleOnly(title)
     }
 
     /// 处理推迟时间结束
     private func handleSnoozeTimeUp() {
+        snoozeTimer?.stop()
+        snoozeTimer = nil
+
+        // 播放推迟警告音
+        soundManager.playSnoozeWarning()
+
         guard case .snooze(let ctx) = stateMachine.getContext() else { return }
 
         if ctx.snoozeCount < Constants.maxSnoozeCount {
@@ -241,6 +290,9 @@ class PomodoroApp: NSObject {
     }
 
     private func handleBreakComplete() {
+        // 播放休息结束提示音
+        soundManager.playBreakComplete()
+
         let completedCount = stateMachine.completedPomodoros
         AlertManager.showBreakComplete(completedCount: completedCount)
         stateMachine?.handle(.timeUp)
@@ -251,7 +303,34 @@ class PomodoroApp: NSObject {
     private func saveState() {
         let state = stateMachine.getContext()
         let pomodoros = stateMachine.completedPomodoros
-        let settings = Settings.default
+        let settings = persistenceManager.loadSettings() ?? Settings.default
         persistenceManager.saveAppState(state: state, pomodoros: pomodoros, settings: settings)
+    }
+
+    // MARK: - 设置
+
+    private func openSettings() {
+        let currentSettings = persistenceManager.loadSettings() ?? Settings.default
+
+        settingsWindowController = SettingsWindowController(settings: currentSettings) {
+            [weak self] newSettings in
+            self?.applySettings(newSettings)
+        }
+        settingsWindowController?.showWindow()
+    }
+
+    private func applySettings(_ settings: Settings) {
+        // 保存设置
+        persistenceManager.saveSettings(settings)
+
+        // 更新声音管理器
+        soundManager.configure(enabled: settings.soundEnabled, volume: settings.soundVolume)
+
+        // 更新状态机设置
+        stateMachine.updateSettings(settings)
+
+        Log.info(
+            "设置已更新: focusDuration=\(settings.focusDuration)s, breakDuration=\(settings.baseBreakDuration)s, soundEnabled=\(settings.soundEnabled)"
+        )
     }
 }
