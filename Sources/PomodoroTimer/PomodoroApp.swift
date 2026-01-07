@@ -188,9 +188,7 @@ class PomodoroApp: NSObject {
                 snoozeTimer = nil
                 // 播放休息开始提示音
                 soundManager.playBreakStart()
-                // 显示弹窗
-                AlertManager.showBreakStart(
-                    breakDuration: ctx.totalSeconds, isLongBreak: ctx.isLongBreak)
+                // 不显示弹窗，直接开始休息
             }
 
             if !ctx.isPaused {
