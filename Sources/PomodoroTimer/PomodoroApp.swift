@@ -254,9 +254,18 @@ class PomodoroApp: NSObject {
 
     /// 更新推迟状态显示
     private func updateSnoozeTime(remaining: Int, accumulated: Int) {
-        // 显示格式：⛔ +累计秒s (剩余秒s)
-        let title = "\(Constants.icons.snooze) +\(accumulated)s (\(remaining)s)"
+        // 显示格式：⛔ +mm:ss (mm:ss)
+        let accumulatedTime = formatTime(accumulated)
+        let remainingTime = formatTime(remaining)
+        let title = "\(Constants.icons.snooze) +\(accumulatedTime) (\(remainingTime))"
         menuBarManager.updateTitleOnly(title)
+    }
+
+    /// 格式化时间为 mm:ss
+    private func formatTime(_ seconds: Int) -> String {
+        let minutes = seconds / 60
+        let secs = seconds % 60
+        return String(format: "%02d:%02d", minutes, secs)
     }
 
     /// 处理推迟时间结束

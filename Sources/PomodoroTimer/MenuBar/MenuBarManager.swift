@@ -73,7 +73,7 @@ class MenuBarManager: NSObject {
             return "\(Constants.icons.focus) \(formatTime(ctx.remainingSeconds))\(pauseIndicator)"
 
         case .snooze(let ctx):
-            return "\(Constants.icons.snooze) +\(ctx.accumulatedSeconds)s"
+            return "\(Constants.icons.snooze) +\(formatTime(ctx.accumulatedSeconds))"
 
         case .breakTime(let ctx):
             let pauseIndicator = ctx.isPaused ? " (已暂停)" : ""
