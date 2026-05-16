@@ -33,10 +33,10 @@ enum Constants {
     /// 长休息触发条件（每完成多少个番茄后触发长休息）
     static let longBreakInterval = 4
 
-    /// 空闲提醒默认间隔
-    static let idleReminderDefaultInterval = 5
+    /// 休息结束后未开始下一轮番茄的默认提醒间隔
+    static let idleReminderDefaultInterval = 3
 
-    /// 空闲提醒最小间隔
+    /// 休息后提醒最小间隔
     static let idleReminderMinimumInterval = 1
 
     // MARK: - 推迟相关常量

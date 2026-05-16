@@ -94,7 +94,7 @@ final class SettingsTests: XCTestCase {
         XCTAssertEqual(settings.soundVolume, 0.3)
     }
 
-    // MARK: - 空闲提醒测试
+    // MARK: - 休息后提醒测试
 
     func testDefaultIdleReminderSettings() {
         let settings = Settings()

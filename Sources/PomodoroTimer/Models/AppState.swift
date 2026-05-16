@@ -85,8 +85,8 @@ struct Settings: Codable, Equatable {
     var soundVolume: Float  // 声音音量 (0.0 - 1.0)
     var barkEnabled: Bool  // 是否启用 Bark 推送
     var barkKey: String  // Bark 推送 Key
-    var idleReminderEnabled: Bool  // 是否启用空闲提醒
-    var idleReminderIntervalMinutes: Int  // 空闲提醒间隔
+    var idleReminderEnabled: Bool  // 是否启用休息后提醒
+    var idleReminderIntervalMinutes: Int  // 休息后提醒间隔
 
     // 兼容性属性（自动计算）
     var focusDuration: Int {

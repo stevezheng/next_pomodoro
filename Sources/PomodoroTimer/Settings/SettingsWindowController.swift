@@ -186,13 +186,13 @@ class SettingsWindowController: NSWindowController {
         separator4.boxType = .separator
         stackView.addArrangedSubview(separator4)
 
-        // 空闲提醒设置区域
-        let reminderLabel = NSTextField(labelWithString: "空闲提醒")
+        // 休息后提醒设置区域
+        let reminderLabel = NSTextField(labelWithString: "休息后提醒")
         reminderLabel.font = NSFont.boldSystemFont(ofSize: 14)
         stackView.addArrangedSubview(reminderLabel)
 
         idleReminderEnabledCheckbox = NSButton(
-            checkboxWithTitle: "没有开始番茄时定时提醒", target: self,
+            checkboxWithTitle: "休息结束后未开始下一轮时提醒一次", target: self,
             action: #selector(idleReminderEnabledChanged))
         stackView.addArrangedSubview(idleReminderEnabledCheckbox)
 

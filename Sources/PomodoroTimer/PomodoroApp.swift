@@ -69,11 +69,7 @@ class PomodoroApp: NSObject {
                 startFocusTimer(remainingSeconds: ctx.remainingSeconds)
             } else if case .breakTime(let ctx) = state, !ctx.isPaused {
                 startBreakTimer(remainingSeconds: ctx.remainingSeconds)
-            } else if case .idle = state {
-                startIdleReminderIfNeeded()
             }
-        } else {
-            startIdleReminderIfNeeded()
         }
     }
 
@@ -141,7 +137,11 @@ class PomodoroApp: NSObject {
 
         switch newState {
         case .idle:
-            startIdleReminderIfNeeded()
+            if case .breakTime = oldState {
+                startIdleReminderIfNeeded()
+            } else {
+                stopIdleReminder()
+            }
 
         case .focus(let ctx):
             stopIdleReminder()
@@ -388,7 +388,6 @@ class PomodoroApp: NSObject {
         let reminderTimer = DispatchSource.makeTimerSource(queue: DispatchQueue.main)
         reminderTimer.schedule(
             deadline: .now() + interval,
-            repeating: interval,
             leeway: .seconds(5)
         )
         reminderTimer.setEventHandler { [weak self] in
@@ -409,6 +408,7 @@ class PomodoroApp: NSObject {
             return
         }
 
+        idleReminderTimer = nil
         soundManager.playSnoozeWarning()
         NotificationManager.shared.sendIdleReminderNotification()
         BarkManager.shared.sendIdleReminder()
@@ -449,7 +449,9 @@ class PomodoroApp: NSObject {
 
         // 更新状态机设置
         stateMachine.updateSettings(settings)
-        startIdleReminderIfNeeded()
+        if idleReminderTimer != nil {
+            startIdleReminderIfNeeded()
+        }
 
         Log.info(
             "设置已更新: focusDuration=\(settings.focusDuration)s, breakDuration=\(settings.baseBreakDuration)s, soundEnabled=\(settings.soundEnabled), barkEnabled=\(settings.barkEnabled), idleReminderEnabled=\(settings.idleReminderEnabled), idleReminderInterval=\(settings.idleReminderInterval)s"
