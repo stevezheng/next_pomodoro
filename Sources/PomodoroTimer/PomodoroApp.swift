@@ -11,6 +11,7 @@ class PomodoroApp: NSObject {
 
     private var currentSnoozeDeadline: DispatchWorkItem?
     private var snoozeTimer: PreciseTimer?  // 用于推迟期间的倒计时显示
+    private var idleReminderTimer: DispatchSourceTimer?
     private var settingsWindowController: SettingsWindowController?
 
     override init() {
@@ -42,6 +43,7 @@ class PomodoroApp: NSObject {
         }
 
         // 配置声音和 Bark
+        _ = NotificationManager.shared
         soundManager.configure(
             enabled: savedSettings.soundEnabled, volume: savedSettings.soundVolume)
         BarkManager.shared.configure(enabled: savedSettings.barkEnabled, key: savedSettings.barkKey)
@@ -67,7 +69,11 @@ class PomodoroApp: NSObject {
                 startFocusTimer(remainingSeconds: ctx.remainingSeconds)
             } else if case .breakTime(let ctx) = state, !ctx.isPaused {
                 startBreakTimer(remainingSeconds: ctx.remainingSeconds)
+            } else if case .idle = state {
+                startIdleReminderIfNeeded()
             }
+        } else {
+            startIdleReminderIfNeeded()
         }
     }
 
@@ -135,14 +141,16 @@ class PomodoroApp: NSObject {
 
         switch newState {
         case .idle:
-            break
+            startIdleReminderIfNeeded()
 
         case .focus(let ctx):
+            stopIdleReminder()
             if !ctx.isPaused {
                 startFocusTimer(remainingSeconds: ctx.remainingSeconds)
             }
 
         case .snooze(let ctx):
+            stopIdleReminder()
             // 只有当从前一个状态切换到 snooze 状态时才显示弹窗
             // 如果已经在 snooze 状态中，不要重复显示弹窗
             if case .snooze(let oldCtx) = oldState {
@@ -164,6 +172,7 @@ class PomodoroApp: NSObject {
             }
 
         case .breakTime(let ctx):
+            stopIdleReminder()
             // 检测是否从非休息状态进入休息状态
             let isFirstEntry: Bool
             if case .breakTime = oldState {
@@ -255,17 +264,10 @@ class PomodoroApp: NSObject {
     /// 更新推迟状态显示
     private func updateSnoozeTime(remaining: Int, accumulated: Int) {
         // 显示格式：⛔ +mm:ss (mm:ss)
-        let accumulatedTime = formatTime(accumulated)
-        let remainingTime = formatTime(remaining)
+        let accumulatedTime = TimeFormatter.format(accumulated)
+        let remainingTime = TimeFormatter.format(remaining)
         let title = "\(Constants.icons.snooze) +\(accumulatedTime) (\(remainingTime))"
         menuBarManager.updateTitleOnly(title)
-    }
-
-    /// 格式化时间为 mm:ss
-    private func formatTime(_ seconds: Int) -> String {
-        let minutes = seconds / 60
-        let secs = seconds % 60
-        return String(format: "%02d:%02d", minutes, secs)
     }
 
     /// 处理推迟时间结束
@@ -366,6 +368,52 @@ class PomodoroApp: NSObject {
         stateMachine?.handle(.timeUp)
     }
 
+    // MARK: - 空闲提醒
+
+    private func startIdleReminderIfNeeded() {
+        guard case .idle = stateMachine.getContext() else {
+            stopIdleReminder()
+            return
+        }
+
+        let settings = stateMachine.settings
+        guard settings.idleReminderEnabled else {
+            stopIdleReminder()
+            return
+        }
+
+        stopIdleReminder()
+
+        let interval = TimeInterval(settings.idleReminderInterval)
+        let reminderTimer = DispatchSource.makeTimerSource(queue: DispatchQueue.main)
+        reminderTimer.schedule(
+            deadline: .now() + interval,
+            repeating: interval,
+            leeway: .seconds(5)
+        )
+        reminderTimer.setEventHandler { [weak self] in
+            self?.sendIdleReminder()
+        }
+        idleReminderTimer = reminderTimer
+        reminderTimer.resume()
+    }
+
+    private func stopIdleReminder() {
+        idleReminderTimer?.cancel()
+        idleReminderTimer = nil
+    }
+
+    private func sendIdleReminder() {
+        guard case .idle = stateMachine.getContext() else {
+            stopIdleReminder()
+            return
+        }
+
+        soundManager.playSnoozeWarning()
+        NotificationManager.shared.sendIdleReminderNotification()
+        BarkManager.shared.sendIdleReminder()
+    }
+
     // MARK: - 持久化
 
     private func saveState() {
@@ -401,9 +449,10 @@ class PomodoroApp: NSObject {
 
         // 更新状态机设置
         stateMachine.updateSettings(settings)
+        startIdleReminderIfNeeded()
 
         Log.info(
-            "设置已更新: focusDuration=\(settings.focusDuration)s, breakDuration=\(settings.baseBreakDuration)s, soundEnabled=\(settings.soundEnabled), barkEnabled=\(settings.barkEnabled)"
+            "设置已更新: focusDuration=\(settings.focusDuration)s, breakDuration=\(settings.baseBreakDuration)s, soundEnabled=\(settings.soundEnabled), barkEnabled=\(settings.barkEnabled), idleReminderEnabled=\(settings.idleReminderEnabled), idleReminderInterval=\(settings.idleReminderInterval)s"
         )
     }
 }

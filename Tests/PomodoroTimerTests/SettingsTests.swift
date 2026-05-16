@@ -93,4 +93,46 @@ final class SettingsTests: XCTestCase {
         XCTAssertFalse(settings.soundEnabled)
         XCTAssertEqual(settings.soundVolume, 0.3)
     }
+
+    // MARK: - 空闲提醒测试
+
+    func testDefaultIdleReminderSettings() {
+        let settings = Settings()
+
+        XCTAssertTrue(settings.idleReminderEnabled)
+        XCTAssertEqual(settings.idleReminderIntervalMinutes, Constants.idleReminderDefaultInterval)
+        XCTAssertEqual(settings.idleReminderInterval, Constants.idleReminderDefaultInterval)
+    }
+
+    func testIdleReminderIntervalInProductionMode() {
+        let settings = Settings(testMode: false, idleReminderInterval: 3)
+
+        XCTAssertEqual(settings.idleReminderInterval, 3 * 60)
+    }
+
+    func testIdleReminderIntervalHasMinimumValue() {
+        let settings = Settings(idleReminderInterval: 0)
+
+        XCTAssertEqual(settings.idleReminderIntervalMinutes, Constants.idleReminderMinimumInterval)
+    }
+
+    func testSettingsDecodeWithMissingIdleReminderFields() throws {
+        let json = """
+            {
+                "focusDurationMinutes": 25,
+                "baseBreakDurationMinutes": 5,
+                "longBreakDurationMinutes": 15,
+                "longBreakInterval": 4,
+                "testMode": true,
+                "soundEnabled": true,
+                "soundVolume": 0.8,
+                "barkEnabled": false,
+                "barkKey": ""
+            }
+            """
+        let settings = try JSONDecoder().decode(Settings.self, from: Data(json.utf8))
+
+        XCTAssertTrue(settings.idleReminderEnabled)
+        XCTAssertEqual(settings.idleReminderIntervalMinutes, Constants.idleReminderDefaultInterval)
+    }
 }

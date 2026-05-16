@@ -70,26 +70,20 @@ class MenuBarManager: NSObject {
 
         case .focus(let ctx):
             let pauseIndicator = ctx.isPaused ? " (已暂停)" : ""
-            return "\(Constants.icons.focus) \(formatTime(ctx.remainingSeconds))\(pauseIndicator)"
+            return "\(Constants.icons.focus) \(TimeFormatter.format(ctx.remainingSeconds))\(pauseIndicator)"
 
         case .snooze(let ctx):
-            return "\(Constants.icons.snooze) +\(formatTime(ctx.accumulatedSeconds))"
+            return "\(Constants.icons.snooze) +\(TimeFormatter.format(ctx.accumulatedSeconds))"
 
         case .breakTime(let ctx):
             let pauseIndicator = ctx.isPaused ? " (已暂停)" : ""
             let icon = ctx.isLongBreak ? Constants.icons.longBreak : Constants.icons.breakTime
-            return "\(icon) \(formatTime(ctx.remainingSeconds))\(pauseIndicator)"
+            return "\(icon) \(TimeFormatter.format(ctx.remainingSeconds))\(pauseIndicator)"
         }
     }
 
     private func formatIdleTitle() -> String {
         Constants.icons.idle
-    }
-
-    private func formatTime(_ seconds: Int) -> String {
-        let minutes = seconds / 60
-        let secs = seconds % 60
-        return String(format: "%02d:%02d", minutes, secs)
     }
 
     // MARK: - 菜单构建

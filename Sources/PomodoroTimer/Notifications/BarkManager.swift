@@ -46,6 +46,18 @@ class BarkManager {
         sendNotification(title: title, body: body, sound: sound, group: "pomodoro")
     }
 
+    /// 发送空闲提醒
+    func sendIdleReminder() {
+        guard isEnabled, !barkKey.isEmpty else { return }
+
+        sendNotification(
+            title: "🍅 还没有开始番茄钟",
+            body: "休息已经结束，记得开始下一轮专注。",
+            sound: "bell",
+            group: "pomodoro"
+        )
+    }
+
     /// 发送推迟警告通知
     func sendSnoozeWarning(count: Int) {
         guard isEnabled, !barkKey.isEmpty else { return }

@@ -112,22 +112,26 @@ class StateMachine {
     }
 
     private func handler(for state: TimerState) -> StateHandler {
+        let key: TimerState
         switch state {
         case .idle:
-            return handlers[.idle]!
+            key = .idle
         case .focus:
-            return handlers[
-                .focus(FocusContext(remainingSeconds: 0, totalSeconds: 0, completedPomodoros: 0))]!
+            key = .focus(FocusContext(remainingSeconds: 0, totalSeconds: 0, completedPomodoros: 0))
         case .snooze:
-            return handlers[
-                .snooze(
-                    SnoozeContext(
-                        accumulatedSeconds: 0, snoozeCount: 0, completedPomodoros: 0,
-                        focusTotalSeconds: 0))]!
+            key = .snooze(
+                SnoozeContext(
+                    accumulatedSeconds: 0, snoozeCount: 0, completedPomodoros: 0,
+                    focusTotalSeconds: 0))
         case .breakTime:
-            return handlers[
-                .breakTime(
-                    BreakContext(remainingSeconds: 0, totalSeconds: 0, completedPomodoros: 0))]!
+            key = .breakTime(
+                BreakContext(remainingSeconds: 0, totalSeconds: 0, completedPomodoros: 0))
         }
+
+        guard let handler = handlers[key] else {
+            Log.error("状态机错误：未找到状态处理器 - \(state)")
+            fatalError("状态机错误：未找到状态处理器 - \(state)")
+        }
+        return handler
     }
 }

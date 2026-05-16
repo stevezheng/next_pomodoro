@@ -12,6 +12,8 @@ class SettingsWindowController: NSWindowController {
     private var barkEnabledCheckbox: NSButton!
     private var barkKeyField: NSTextField!
     private var barkTestButton: NSButton!
+    private var idleReminderEnabledCheckbox: NSButton!
+    private var idleReminderIntervalField: NSTextField!
     private var testModeCheckbox: NSButton!
     private var iCloudStatusLabel: NSTextField!
     private var persistenceManager: PersistenceManager?
@@ -28,7 +30,7 @@ class SettingsWindowController: NSWindowController {
         self.onSave = onSave
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 450, height: 750),
+            contentRect: NSRect(x: 0, y: 0, width: 450, height: 840),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -184,6 +186,38 @@ class SettingsWindowController: NSWindowController {
         separator4.boxType = .separator
         stackView.addArrangedSubview(separator4)
 
+        // 空闲提醒设置区域
+        let reminderLabel = NSTextField(labelWithString: "空闲提醒")
+        reminderLabel.font = NSFont.boldSystemFont(ofSize: 14)
+        stackView.addArrangedSubview(reminderLabel)
+
+        idleReminderEnabledCheckbox = NSButton(
+            checkboxWithTitle: "没有开始番茄时定时提醒", target: self,
+            action: #selector(idleReminderEnabledChanged))
+        stackView.addArrangedSubview(idleReminderEnabledCheckbox)
+
+        let reminderRow = NSStackView()
+        reminderRow.orientation = .horizontal
+        reminderRow.spacing = 10
+
+        let reminderIntervalLabel = NSTextField(labelWithString: "提醒间隔:")
+        reminderIntervalLabel.widthAnchor.constraint(equalToConstant: 100).isActive = true
+        reminderRow.addArrangedSubview(reminderIntervalLabel)
+
+        idleReminderIntervalField = NSTextField()
+        idleReminderIntervalField.placeholderString = "\(Constants.idleReminderDefaultInterval)"
+        idleReminderIntervalField.isEditable = true
+        idleReminderIntervalField.isSelectable = true
+        idleReminderIntervalField.isBordered = true
+        idleReminderIntervalField.bezelStyle = .squareBezel
+        idleReminderIntervalField.widthAnchor.constraint(equalToConstant: 80).isActive = true
+        reminderRow.addArrangedSubview(idleReminderIntervalField)
+
+        let reminderUnitLabel = NSTextField(labelWithString: "分钟")
+        reminderRow.addArrangedSubview(reminderUnitLabel)
+
+        stackView.addArrangedSubview(reminderRow)
+
         // 测试模式
         testModeCheckbox = NSButton(checkboxWithTitle: "测试模式（使用秒代替分钟）", target: nil, action: nil)
         stackView.addArrangedSubview(testModeCheckbox)
@@ -285,12 +319,15 @@ class SettingsWindowController: NSWindowController {
         soundVolumeSlider.floatValue = currentSettings.soundVolume
         barkEnabledCheckbox.state = currentSettings.barkEnabled ? .on : .off
         barkKeyField.stringValue = currentSettings.barkKey
+        idleReminderEnabledCheckbox.state = currentSettings.idleReminderEnabled ? .on : .off
+        idleReminderIntervalField.integerValue = currentSettings.idleReminderIntervalMinutes
         testModeCheckbox.state = currentSettings.testMode ? .on : .off
 
         // 更新启用状态
         soundVolumeSlider.isEnabled = soundEnabledCheckbox.state == .on
         barkKeyField.isEnabled = barkEnabledCheckbox.state == .on
         barkTestButton.isEnabled = barkEnabledCheckbox.state == .on
+        idleReminderIntervalField.isEnabled = idleReminderEnabledCheckbox.state == .on
     }
 
     @objc private func soundEnabledChanged() {
@@ -300,6 +337,10 @@ class SettingsWindowController: NSWindowController {
     @objc private func barkEnabledChanged() {
         barkKeyField.isEnabled = barkEnabledCheckbox.state == .on
         barkTestButton.isEnabled = barkEnabledCheckbox.state == .on
+    }
+
+    @objc private func idleReminderEnabledChanged() {
+        idleReminderIntervalField.isEnabled = idleReminderEnabledCheckbox.state == .on
     }
 
     @objc private func testBarkClicked() {
@@ -363,7 +404,10 @@ class SettingsWindowController: NSWindowController {
             soundEnabled: soundEnabledCheckbox.state == .on,
             soundVolume: soundVolumeSlider.floatValue,
             barkEnabled: barkEnabledCheckbox.state == .on,
-            barkKey: barkKeyField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            barkKey: barkKeyField.stringValue.trimmingCharacters(in: .whitespacesAndNewlines),
+            idleReminderEnabled: idleReminderEnabledCheckbox.state == .on,
+            idleReminderInterval: max(
+                Constants.idleReminderMinimumInterval, idleReminderIntervalField.integerValue)
         )
 
         onSave?(newSettings)

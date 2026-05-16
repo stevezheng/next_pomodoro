@@ -36,7 +36,7 @@ struct FocusContext: Equatable, Hashable, Codable {
 struct SnoozeContext: Equatable, Hashable, Codable {
     var accumulatedSeconds: Int
     var snoozeCount: Int
-    var maxSnoozeCount: Int = 3
+    var maxSnoozeCount: Int = Constants.maxSnoozeCount
     var completedPomodoros: Int
     var focusTotalSeconds: Int
 }
@@ -85,6 +85,8 @@ struct Settings: Codable, Equatable {
     var soundVolume: Float  // 声音音量 (0.0 - 1.0)
     var barkEnabled: Bool  // 是否启用 Bark 推送
     var barkKey: String  // Bark 推送 Key
+    var idleReminderEnabled: Bool  // 是否启用空闲提醒
+    var idleReminderIntervalMinutes: Int  // 空闲提醒间隔
 
     // 兼容性属性（自动计算）
     var focusDuration: Int {
@@ -99,6 +101,11 @@ struct Settings: Codable, Equatable {
         return testMode ? longBreakDurationMinutes : longBreakDurationMinutes * 60
     }
 
+    var idleReminderInterval: Int {
+        let interval = max(Constants.idleReminderMinimumInterval, idleReminderIntervalMinutes)
+        return testMode ? interval : interval * Constants.secondsPerMinute
+    }
+
     static let `default` = Settings()
 
     init(
@@ -110,7 +117,9 @@ struct Settings: Codable, Equatable {
         soundEnabled: Bool = true,
         soundVolume: Float = 0.8,
         barkEnabled: Bool = false,
-        barkKey: String = ""
+        barkKey: String = "",
+        idleReminderEnabled: Bool = true,
+        idleReminderInterval: Int = Constants.idleReminderDefaultInterval
     ) {
         // 直接存储分钟值，不根据 testMode 转换
         self.focusDurationMinutes = focusDuration
@@ -122,20 +131,76 @@ struct Settings: Codable, Equatable {
         self.soundVolume = soundVolume
         self.barkEnabled = barkEnabled
         self.barkKey = barkKey
+        self.idleReminderEnabled = idleReminderEnabled
+        self.idleReminderIntervalMinutes = max(
+            Constants.idleReminderMinimumInterval, idleReminderInterval)
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case focusDurationMinutes
+        case baseBreakDurationMinutes
+        case longBreakDurationMinutes
+        case longBreakInterval
+        case testMode
+        case soundEnabled
+        case soundVolume
+        case barkEnabled
+        case barkKey
+        case idleReminderEnabled
+        case idleReminderIntervalMinutes
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        focusDurationMinutes =
+            try container.decodeIfPresent(Int.self, forKey: .focusDurationMinutes) ?? 25
+        baseBreakDurationMinutes =
+            try container.decodeIfPresent(Int.self, forKey: .baseBreakDurationMinutes) ?? 5
+        longBreakDurationMinutes =
+            try container.decodeIfPresent(Int.self, forKey: .longBreakDurationMinutes) ?? 15
+        longBreakInterval =
+            try container.decodeIfPresent(Int.self, forKey: .longBreakInterval)
+            ?? Constants.longBreakInterval
+        testMode = try container.decodeIfPresent(Bool.self, forKey: .testMode) ?? true
+        soundEnabled = try container.decodeIfPresent(Bool.self, forKey: .soundEnabled) ?? true
+        soundVolume = try container.decodeIfPresent(Float.self, forKey: .soundVolume) ?? 0.8
+        barkEnabled = try container.decodeIfPresent(Bool.self, forKey: .barkEnabled) ?? false
+        barkKey = try container.decodeIfPresent(String.self, forKey: .barkKey) ?? ""
+        idleReminderEnabled =
+            try container.decodeIfPresent(Bool.self, forKey: .idleReminderEnabled) ?? true
+        let decodedInterval =
+            try container.decodeIfPresent(Int.self, forKey: .idleReminderIntervalMinutes)
+            ?? Constants.idleReminderDefaultInterval
+        idleReminderIntervalMinutes = max(
+            Constants.idleReminderMinimumInterval, decodedInterval)
     }
 
     /// 获取推迟选项（秒）
     var snoozeOptions: [Int] {
-        testMode ? [5, 10, 15] : [5 * 60, 10 * 60, 15 * 60]
+        if testMode {
+            return [
+                Constants.SnoozeDuration.short,
+                Constants.SnoozeDuration.medium,
+                Constants.SnoozeDuration.long
+            ]
+        } else {
+            return [
+                Constants.SnoozeDuration.short * Constants.secondsPerMinute,
+                Constants.SnoozeDuration.medium * Constants.secondsPerMinute,
+                Constants.SnoozeDuration.long * Constants.secondsPerMinute
+            ]
+        }
     }
 
     /// 计算休息时间（含额外休息奖励）
-    /// 规则：总休息时间 = 基础休息 + (累计推迟时间 ÷ 5)
+    /// 规则：总休息时间 = 基础休息 + (累计推迟时间 ÷ 惩罚比例)
     func calculateBreakDuration(snoozeSeconds: Int, isLongBreak: Bool = false) -> Int {
         let baseDuration = isLongBreak ? longBreakDuration : baseBreakDuration
-        // 测试模式：每5秒推迟增加1秒休息
-        // 正常模式：每5分钟(300秒)推迟增加1分钟(60秒)休息
-        let bonus = testMode ? (snoozeSeconds / 5) : (snoozeSeconds / 300) * 60
+        // 测试模式：每 N 秒推迟增加 1 秒休息
+        // 正常模式：每 5 分钟(300秒)推迟增加 1 分钟(60秒)休息
+        let bonus = testMode
+            ? (snoozeSeconds / Constants.snoozePenaltyRatioTest)
+            : (snoozeSeconds / Constants.snoozePenaltySecondsNormal) * Constants.snoozePenaltyBonusSecondsNormal
         let result = baseDuration + bonus
         Log.debug(
             "计算休息时间 - 基础: \(baseDuration)秒, 推迟: \(snoozeSeconds)秒, 奖励: \(bonus)秒, 总计: \(result)秒, 测试模式: \(testMode)"

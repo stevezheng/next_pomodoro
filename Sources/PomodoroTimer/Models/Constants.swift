@@ -32,4 +32,30 @@ enum Constants {
 
     /// 长休息触发条件（每完成多少个番茄后触发长休息）
     static let longBreakInterval = 4
+
+    /// 空闲提醒默认间隔
+    static let idleReminderDefaultInterval = 5
+
+    /// 空闲提醒最小间隔
+    static let idleReminderMinimumInterval = 1
+
+    // MARK: - 推迟相关常量
+
+    /// 推迟惩罚比例：每 N 秒推迟增加 1 秒休息（测试模式）
+    static let snoozePenaltyRatioTest = 5
+
+    /// 推迟惩罚比例：每 N 秒推迟增加 M 秒休息（正常模式）
+    /// 正常模式：每 5 分钟(300秒)推迟增加 1 分钟(60秒)休息
+    static let snoozePenaltySecondsNormal = 300
+    static let snoozePenaltyBonusSecondsNormal = 60
+
+    /// 推迟时间选项（秒）
+    enum SnoozeDuration {
+        static let short = 5      // 测试模式 5 秒，正常模式 5 分钟
+        static let medium = 10    // 测试模式 10 秒，正常模式 10 分钟
+        static let long = 15      // 测试模式 15 秒，正常模式 15 分钟
+    }
+
+    /// 正常模式下的分钟转秒数
+    static let secondsPerMinute = 60
 }

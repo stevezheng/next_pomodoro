@@ -55,6 +55,15 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         )
     }
 
+    /// 发送空闲提醒通知
+    func sendIdleReminderNotification() {
+        sendNotification(
+            title: "🍅 还没有开始番茄钟",
+            body: "点一下菜单栏里的“开始番茄钟”，进入下一轮专注。",
+            identifier: "idle-reminder"
+        )
+    }
+
     /// 发送推迟警告通知
     func sendSnoozeWarningNotification(snoozeCount: Int) {
         let warnings = ["⚠️ 你还在工作？", "⛔ 最后一次警告！", "🚫 强制休息！"]
