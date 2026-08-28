@@ -1,0 +1,13 @@
+services:
+  tomatoruler-web:
+    build:
+      context: ./deploy/privacy
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - dokploy-network
+
+networks:
+  dokploy-network:
+    external: true
+    name: dokploy-network

@@ -12,6 +12,9 @@
 *.xcworkspace/
 xcuserdata/
 
+# Local secrets
+.env.local
+
 # Debug
 .debug/
 PomodoroTimer.app

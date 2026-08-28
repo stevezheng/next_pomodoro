@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>番茄戒尺 · 隐私政策</title>
+  <meta name="description" content="番茄戒尺（Tomato Ruler）隐私政策">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f1ea;
+      --ink: #1f1a17;
+      --muted: #5c534c;
+      --card: #fffaf4;
+      --line: #e4d8cc;
+      --accent: #c44536;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1b1714;
+        --ink: #f4ece4;
+        --muted: #c4b6aa;
+        --card: #261f1b;
+        --line: #3b322c;
+        --accent: #e07a6a;
+      }
+    }
+    body {
+      margin: 0;
+      font: 16px/1.7 -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    main {
+      max-width: 42rem;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 1.75rem 1.5rem;
+    }
+    h1 { font-size: 1.75rem; margin: 0 0 0.35rem; }
+    h2 { font-size: 1.15rem; margin: 1.75rem 0 0.5rem; }
+    p, li { color: var(--ink); }
+    .meta, .muted { color: var(--muted); font-size: 0.92rem; }
+    a { color: var(--accent); }
+    ul { padding-left: 1.2rem; }
+    hr { border: 0; border-top: 1px solid var(--line); margin: 2rem 0; }
+  </style>
+</head>
+<body>
+  <main>
+    <article class="card">
+      <p class="meta">Tomato Ruler · 番茄戒尺</p>
+      <h1>隐私政策</h1>
+      <p class="meta">生效日期：2026 年 8 月 28 日 · 运营方：seo10</p>
+
+      <p>番茄戒尺是一款 macOS 菜单栏番茄钟。我们不设账号，不做广告，也不把你的数据卖给任何人。本政策说明应用会处理哪些信息。</p>
+
+      <h2>我们收集什么</h2>
+      <ul>
+        <li><strong>本地设置与计时状态</strong>：专注/休息时长、声音与提醒开关、当前计时、完成数等，保存在你的 Mac 上（UserDefaults）。</li>
+        <li><strong>iCloud 同步（系统能力）</strong>：若你已登录 iCloud，上述设置和状态可能通过 Apple 的 iCloud 钥匙值存储在你的设备间同步。我们无法读取你的 iCloud 内容。</li>
+        <li><strong>可选 Bark 推送</strong>：仅在你主动开启并填写 Bark Key 后，应用会把推送标题、正文（含番茄完成数）和该 Key 发送到你配置的 Bark 服务（默认 <code>api.day.app</code>）。未开启则不会发出任何网络请求。</li>
+        <li><strong>系统通知</strong>：用于空闲提醒等本地通知。通知权限由 macOS 管理。</li>
+      </ul>
+
+      <h2>我们不收集什么</h2>
+      <ul>
+        <li>不要求注册，不收集姓名、邮箱、电话或支付信息。</li>
+        <li>不做跨 App 追踪，不接入分析 SDK，不投放广告。</li>
+        <li>不把数据出售或用于营销。</li>
+      </ul>
+
+      <h2>第三方</h2>
+      <p>Bark 是可选的第三方推送服务。启用后，相关数据由该服务按其自身政策处理。你可以随时在设置中关闭 Bark 或清空 Key。</p>
+      <p>iCloud 由 Apple 提供，适用 Apple 的隐私政策。</p>
+
+      <h2>你的选择</h2>
+      <ul>
+        <li>关闭 Bark、删除 Key，即停止向第三方发送推送内容。</li>
+        <li>在系统设置中退出 iCloud 或关闭本应用的 iCloud 能力后，设置不再云同步。</li>
+        <li>卸载应用并清除其容器数据，即可删除本机保存的设置与统计。</li>
+      </ul>
+
+      <h2>联系我们</h2>
+      <p>如有隐私问题，请发邮件至 <a href="mailto:hello@seo10.de">hello@seo10.de</a>。</p>
+
+      <hr>
+      <h1>Privacy Policy</h1>
+      <p class="muted">Effective: 28 August 2026 · Operator: seo10</p>
+      <p>Tomato Ruler is a macOS menu-bar Pomodoro timer. There is no account, no ads, and we do not sell your data.</p>
+      <h2>What we process</h2>
+      <ul>
+        <li><strong>Local settings and timer state</strong> on your Mac (UserDefaults).</li>
+        <li><strong>iCloud Key-Value storage</strong> if you are signed into iCloud, so settings can sync across your devices. We cannot read your iCloud contents.</li>
+        <li><strong>Optional Bark push</strong>: only after you enable it and enter a Bark key. The app then sends notification title/body (including pomodoro counts) and the key to the Bark service you configure (default <code>api.day.app</code>).</li>
+        <li><strong>Local notifications</strong> for idle reminders, managed by macOS permission prompts.</li>
+      </ul>
+      <h2>What we do not collect</h2>
+      <ul>
+        <li>No sign-in, no name, email, phone, or payment data.</li>
+        <li>No cross-app tracking, analytics SDKs, or advertising.</li>
+      </ul>
+      <h2>Your choices</h2>
+      <ul>
+        <li>Turn off Bark or clear the key to stop third-party push traffic.</li>
+        <li>Sign out of iCloud to stop cloud sync.</li>
+        <li>Uninstall the app and remove its container to delete local data.</li>
+      </ul>
+      <p>Contact: <a href="mailto:hello@seo10.de">hello@seo10.de</a></p>
+    </article>
+  </main>
+</body>
+</html>
